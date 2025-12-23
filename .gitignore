@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+
+
+# myFiles
+*.env
+*.lock
+*.log
+
+
