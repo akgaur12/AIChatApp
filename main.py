@@ -1,16 +1,36 @@
 import os, sys, logging, subprocess
+from logging.handlers import RotatingFileHandler
 from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api_router import chat_router, user_router
+from src.utils import load_config
 
+cfg = load_config()
+
+HOST = cfg["FastAPI"]["HOST"]
+PORT = cfg["FastAPI"]["PORT"]
+WORKERS = cfg["FastAPI"]["WORKERS"]
+LOG_LEVEL = cfg["FastAPI"]["LOG_LEVEL"]
+TIMEOUT = cfg["FastAPI"]["TIMEOUT"]
+GRACEFUL_TIMEOUT = cfg["FastAPI"]["GRACEFUL_TIMEOUT"]
+
+LOG_DIR = cfg["Files"]["LOG_DIR"]
+LOG_FILE_NAME = cfg["Files"]["LOG_FILE_NAME"]
+MAX_FILE_SIZE = cfg["Files"]["MAX_FILE_SIZE"]
+MAX_FILE_COUNT = cfg["Files"]["MAX_FILE_COUNT"] 
+
+
+# Create logs directory if it does not exist
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler("app.log")],
+    handlers=[logging.StreamHandler(sys.stdout), RotatingFileHandler(LOG_DIR + "/" + LOG_FILE_NAME, maxBytes=MAX_FILE_SIZE, backupCount=MAX_FILE_COUNT)],
 )
 logger = logging.getLogger(__name__)
 
@@ -35,15 +55,14 @@ app.include_router(user_router.router)
 
 # Entry points for running the application in production or development mode
 def main_prod():
-    workers = 2
 
     cmd = [
         "gunicorn",
-        "-w", str(workers),
+        "-w", WORKERS,
         "-k", "uvicorn.workers.UvicornWorker",
-        "--timeout", "240",
-        "--graceful-timeout", "60",
-        "-b", "0.0.0.0:8000",
+        "--timeout", TIMEOUT,
+        "--graceful-timeout", GRACEFUL_TIMEOUT,
+        "-b", f"{HOST}:{PORT}",
         "main:app",
     ]
 
@@ -53,17 +72,19 @@ def main_dev():
     cmd = [
         "uvicorn",
         "main:app",
-        "--host", "0.0.0.0",
-        "--port", "8000",
+        "--host", HOST,
+        "--port", PORT,
         "--reload",
-        "--log-level", "debug",
+        "--log-level", LOG_LEVEL,
     ]
     subprocess.run(cmd, check=True)
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "dev":
+        logger.info("Starting in development mode")
         main_dev()
     else:
+        logger.info("Starting in production mode")
         main_prod()
 
 
