@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.api_router import chat_router, user_router
 from src.utils import load_config
+from src.lifespan import lifespan
 
 cfg = load_config()
 
@@ -36,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 # Initialize FastAPI application
-app = FastAPI(title="AIChatApp", version="1.0.0")
+app = FastAPI(title="AIChatApp", version="1.0.0", lifespan=lifespan)
 
 # Configure CORS
 app.add_middleware(
