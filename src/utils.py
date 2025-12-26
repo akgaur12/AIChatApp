@@ -10,6 +10,7 @@ def load_config():
         config = yaml.safe_load(f)
     return config
 
+
 # Load configuration
 cfg = load_config()
 SECRET_KEY = cfg["Security"]["SECRET_KEY"]

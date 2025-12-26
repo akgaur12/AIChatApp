@@ -10,5 +10,6 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
 users_collection = db["users"]
+conversations_collection = db["conversations"]
 
 
