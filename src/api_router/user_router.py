@@ -43,6 +43,12 @@ async def login(user: UserLogin):
     return {"access_token": access_token}
 
 
+# ---------------- LOGOUT ----------------
+@router.post("/logout")
+async def logout(current_user=Depends(get_current_user)):
+    return {"message": "Logged out successfully"}
+
+
 # ---------------- RESET PASSWORD ----------------
 @router.put("/reset-password")
 async def reset_password(data: ResetPasswordRequest, current_user=Depends(get_current_user)):

@@ -1,8 +1,10 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from jose import jwt
-import yaml
+import yaml, os
 
+load_dotenv()
 
 # Load configuration from YAML file function
 def load_config():
@@ -13,7 +15,7 @@ def load_config():
 
 # Load configuration
 cfg = load_config()
-SECRET_KEY = cfg["Security"]["SECRET_KEY"]
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = cfg["Security"]["ALGORITHM"]
 ACCESS_TOKEN_EXPIRE_MINUTES = cfg["Security"]["ACCESS_TOKEN_EXPIRE_MINUTES"]
 
