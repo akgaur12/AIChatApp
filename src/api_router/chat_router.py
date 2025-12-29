@@ -251,3 +251,43 @@ async def delete_conversion_by_id(
         raise HTTPException(status_code=404, detail="Conversation not found")
 
     return {"message": "Conversation deleted successfully"}
+
+
+@router.put("/conversations/{conversation_id}/rename", response_model=Conversation, status_code=status.HTTP_200_OK)
+async def rename_conversation_title(
+    conversation_id: str,
+    payload: ConversationCreate,
+    current_user=Depends(get_current_user)
+):
+    new_title = payload.title.strip()
+
+    if not ObjectId.is_valid(conversation_id):
+        raise HTTPException(status_code=400, detail="Invalid conversation ID")
+
+    if not new_title or not new_title.strip():
+        raise HTTPException(status_code=400, detail="Title cannot be empty")
+
+    # Ensure conversation belongs to the user
+    conversation = await conversations_collection.find_one({
+        "_id": ObjectId(conversation_id),
+        "user_id": str(current_user["_id"])
+    })
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    await conversations_collection.update_one(
+        {"_id": ObjectId(conversation_id)},
+        {
+            "$set": {
+                "title": new_title.strip(),
+                "updated_at": get_current_timestamp()
+            }
+        }
+    )
+
+    updated_conversation = await conversations_collection.find_one(
+        {"_id": ObjectId(conversation_id)}
+    )
+
+    return serialize_conversation(updated_conversation)

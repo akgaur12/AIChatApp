@@ -6,14 +6,14 @@ class UserCreate(BaseModel):
 
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=6)
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
 class ResetPasswordRequest(BaseModel):
-    old_password: str
+    old_password: str = Field(min_length=6)
     new_password: str = Field(min_length=6)
 
 
@@ -22,7 +22,12 @@ class Message(BaseModel):
     assistant: str
 
 class ConversationBase(BaseModel):
-    title: str = "New Chat"
+    title: str = Field(
+        default="New Chat",
+        min_length=1,
+        max_length=60,
+        description="New conversation title (1-60 characters)"
+    )
 
 class ConversationCreate(ConversationBase):
     pass
