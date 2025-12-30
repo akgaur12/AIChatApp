@@ -27,7 +27,6 @@ def get_current_timestamp():
     # return datetime.utcnow().isoformat()
     return datetime.now().isoformat()
 
-
 def serialize_conversation(conversation) -> Conversation:
     return Conversation(
         id=str(conversation["_id"]),

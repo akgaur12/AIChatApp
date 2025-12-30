@@ -8,7 +8,7 @@ from src.api_router import chat_router, user_router
 from src.utils import load_config
 from src.lifespan import lifespan
 
-cfg = load_config()
+cfg = load_config(filename="config.yml")
 
 HOST = cfg["FastAPI"]["HOST"]
 PORT = cfg["FastAPI"]["PORT"]
@@ -17,10 +17,11 @@ LOG_LEVEL = cfg["FastAPI"]["LOG_LEVEL"]
 TIMEOUT = cfg["FastAPI"]["TIMEOUT"]
 GRACEFUL_TIMEOUT = cfg["FastAPI"]["GRACEFUL_TIMEOUT"]
 
-LOG_DIR = cfg["Files"]["LOG_DIR"]
-LOG_FILE_NAME = cfg["Files"]["LOG_FILE_NAME"]
-MAX_FILE_SIZE = cfg["Files"]["MAX_FILE_SIZE"]
-MAX_FILE_COUNT = cfg["Files"]["MAX_FILE_COUNT"] 
+LOG_DIR = cfg["Logging"]["LOG_DIR"]
+LOG_FILE_NAME = cfg["Logging"]["LOG_FILE_NAME"]
+MAX_FILE_SIZE = cfg["Logging"]["MAX_FILE_SIZE"]
+MAX_FILE_COUNT = cfg["Logging"]["MAX_FILE_COUNT"] 
+LOG_FORMAT = cfg["Logging"]["LOG_FORMAT"]
 
 
 # Create logs directory if it does not exist
@@ -30,10 +31,12 @@ if not os.path.exists(LOG_DIR):
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format=LOG_FORMAT,
     handlers=[logging.StreamHandler(sys.stdout), RotatingFileHandler(LOG_DIR + "/" + LOG_FILE_NAME, maxBytes=MAX_FILE_SIZE, backupCount=MAX_FILE_COUNT)],
 )
 logger = logging.getLogger(__name__)
+
+# logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 # Initialize FastAPI application

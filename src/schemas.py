@@ -20,6 +20,9 @@ class ResetPasswordRequest(BaseModel):
 class Message(BaseModel):
     user: str
     assistant: str
+    input_tokens: int
+    output_tokens: int
+    response_time: float
 
 class ConversationBase(BaseModel):
     title: str = Field(

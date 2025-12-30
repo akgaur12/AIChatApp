@@ -7,8 +7,8 @@ import yaml, os
 load_dotenv()
 
 # Load configuration from YAML file function
-def load_config():
-    with open("src/config/config.yml", "r") as f:
+def load_config(filename="config.yml"):
+    with open("src/config/" + filename, "r") as f:
         config = yaml.safe_load(f)
     return config
 

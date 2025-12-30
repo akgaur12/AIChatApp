@@ -20,12 +20,13 @@ Security:
     ACCESS_TOKEN_EXPIRE_MINUTES: 360 # 6 hours
 
 
-# File Configuration
-Files:
+# Logging Configuration
+Logging:
     LOG_DIR: "logs"
     LOG_FILE_NAME: "app.log"
     MAX_FILE_SIZE: 5242880   # 5 MB in bytes
     MAX_FILE_COUNT: 10       # 10 files
+    LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 
 # OpenAI Configuration
