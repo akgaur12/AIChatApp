@@ -3,14 +3,14 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 
 from src.database import users_collection
-from src.utils import SECRET_KEY, ALGORITHM
+from src.utils import JWT_SECRET_KEY, ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
 
         if not email:

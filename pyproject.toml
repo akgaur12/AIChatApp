@@ -6,9 +6,18 @@ readme = "README.md"
 requires-python = ">=3.12"
 
 dependencies = [
+    "ddgs>=9.10.0",
     "dotenv>=0.9.9",
     "fastapi>=0.127.0",
     "gunicorn>=23.0.0",
+    "langchain>=1.2.0",
+    "langchain-aws>=1.1.1",
+    "langchain-community>=0.4.1",
+    "langchain-experimental>=0.4.1",
+    "langchain-groq>=1.1.1",
+    "langchain-ollama>=1.0.1",
+    "langchain-openai>=1.1.6",
+    "langgraph>=1.0.5",
     "motor>=3.7.1",
     "openai>=2.14.0",
     "passlib>=1.7.4",

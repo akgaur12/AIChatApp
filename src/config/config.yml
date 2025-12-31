@@ -12,7 +12,9 @@ FastAPI:
 MongoDB:
     MONGO_URL: "mongodb://localhost:27017"
     DB_NAME: "ai_chat_app"
-
+    USER_COLLECTION: "users"
+    CHAT_HISTORY_COLLECTION: "conversations"
+    
 
 # Security Configuration
 Security:
@@ -29,15 +31,48 @@ Logging:
     LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 
-# OpenAI Configuration
-OpenAI:
-    API_KEY: "EMPTY"
-    BASE_URL: "http://10.90.12.105:11434/v1"
-    MODEL: "openai.gpt-oss-20b-1:0"
-    MAX_TOKENS: 1000
-    TEMPERATURE: 0.5
-    TOP_P: 1.0
-    FREQUENCY_PENALTY: 0.0
-    PRESENCE_PENALTY: 0.0
-    REASONING_EFFORT: "low"
+# Services Configuration
+Services:
+    SUPPORTED_SERVICES: ["chat", "web_search"]
+
+
+# LLM Configuration
+LLM:
+    Provider: "vllm"
+    ollama:
+        BASE_URL: "http://0.0.0.0:11434"
+        MODEL: "nemotron-3-nano:30b-cloud"
+        MAX_TOKENS: 4096
+        TEMPERATURE: 0.5
+        TOP_P: 1.0
+        FREQUENCY_PENALTY: 0.0
+        PRESENCE_PENALTY: 0.0
+        REASONING_EFFORT: "low"
+
+    vllm:                                                
+        API_KEY: "EMPTY"
+        BASE_URL: "http://10.90.12.105:11434/v1"
+        MODEL: "openai.gpt-oss-20b-1:0"
+        MAX_TOKENS: 4096
+        TEMPERATURE: 0.5
+        TOP_P: 1.0
+        FREQUENCY_PENALTY: 0.0
+        PRESENCE_PENALTY: 0.0
+        REASONING_EFFORT: "low"
+
+    aws_bedrock:
+        AWS_REGION: "ap-south-1"
+        MODEL: "openai.gpt-oss-20b-1:0"
+        MAX_TOKENS: 4096
+        TEMPERATURE: 0.5
+        TOP_P: 1.0
+        FREQUENCY_PENALTY: 0.0
+        PRESENCE_PENALTY: 0.0
+        REASONING_EFFORT: "low"
+
+    groq:
+        MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
+        MAX_TOKENS: 4096
+        TEMPERATURE: 0.5
+        REASONING_EFFORT: "low"
 

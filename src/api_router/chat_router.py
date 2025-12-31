@@ -1,4 +1,4 @@
-import logging
+import logging, asyncio
 from typing import List
 from datetime import datetime
 
@@ -8,19 +8,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.utils import load_config
 from src.deps import get_current_user
+from src.pipelines.builder import pipeline
+from src.services.models import llm_model
 from src.database import conversations_collection
 from src.schemas import ConversationCreate, ConversationUpdate, Conversation, UserInput, UserQueryResponse
 
+
+
 logger = logging.getLogger(__name__)
-cfg = load_config()
+cfg = load_config(filename="config.yml")
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
-
-
-client = OpenAI(
-    api_key=cfg["OpenAI"]["API_KEY"],  
-    base_url=cfg["OpenAI"]["BASE_URL"],
-)
 
 
 def get_current_timestamp():
@@ -37,28 +35,26 @@ def serialize_conversation(conversation) -> Conversation:
         updated_at=conversation.get("updated_at"),
     )
 
-def generate_title(user_query: str) -> str:
-    try:
-        response = client.chat.completions.create(
-            model="openai.gpt-oss-20b-1:0",
-            messages=[
+async def generate_title(user_query: str) -> str:
+    try:        
+        response = await llm_model.ainvoke([
                 {
                     "role": "system", 
                     "content": "You are a helpful assistant. Generate a short, 3-5 word title for a conversation that starts with the following user query. Do not use quotes."
                 },
                 {"role": "user", "content": user_query}
-            ],
-            max_tokens=100,
-            reasoning_effort=cfg["OpenAI"]["REASONING_EFFORT"]
+            ],  
+            max_tokens=100, 
+            temperature=0.7 
         )
       
         # Remove quotes if present
-        title = response.choices[0].message.content
+        title = response.content
         if title.startswith('"') and title.endswith('"'):
             title = title[1:-1]
         return title
     except Exception as e:
-        logger.error(f"Error generating title: {e}")
+        logger.error(f"Error generating title: {e}", exc_info=True)
         return user_query[:50]
 
 
@@ -67,16 +63,18 @@ async def execute_user_query(
     user_input: UserInput,
     current_user=Depends(get_current_user)
 ):
-    if user_input.service_name.lower() != "chat":
+    user_prompt = user_input.user_query.strip()
+    service_name = user_input.service_name.strip().lower()
+    messages = []
+    
+    if service_name not in cfg["Services"]["SUPPORTED_SERVICES"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
-            detail=f"Service '{user_input.service_name}' not supported"
+            detail=f"Service '{service_name}' not supported"
         )
 
     user_id = str(current_user["_id"])
     conversation_id = user_input.conversation_id
-    
-    messages = []
     
     if conversation_id:
         if not ObjectId.is_valid(conversation_id):
@@ -98,25 +96,26 @@ async def execute_user_query(
             messages.append({"role": "assistant", "content": msg.get("assistant")})
     
     # Append current user message for LLM context
-    messages.append({"role": "user", "content": user_input.user_query})
+    messages.append({"role": "user", "content": user_prompt})
 
-    # Call LLM
-    # We might want to pass recent messages to LLM for context
     # taking last 10 messages (5 turns) for context
     llm_messages = messages[-10:] if len(messages) > 10 else messages
     
-    response = client.chat.completions.create(
-        model="openai.gpt-oss-20b-1:0",
-        messages=llm_messages,
-        reasoning_effort=cfg["OpenAI"]["REASONING_EFFORT"]
+    # Call pipeline
+    response = await pipeline.ainvoke(
+        {   
+            "service_name": service_name,
+            "user_input": user_prompt, 
+            "llm_messages": llm_messages
+        }
     )
-    assistant_content = response.choices[0].message.content
     
+    assistant_content = response["llm_response"]
     timestamp = get_current_timestamp()
     
     # New message entry to save
     new_message_entry = {
-        "user": user_input.user_query,
+        "user": user_prompt,
         "assistant": assistant_content
     }
     
@@ -132,7 +131,7 @@ async def execute_user_query(
     else:
         # Create new conversation
         # Generate title using LLM
-        title = generate_title(user_input.user_query)
+        title = await generate_title(user_prompt)
         
         new_conversation = {
             "user_id": user_id,
@@ -155,8 +154,6 @@ async def execute_user_query(
         "conversation_id": conversation_id,
         "message": assistant_content
     }
-
-
 
 
 @router.post("/conversations", response_model=Conversation, status_code=status.HTTP_201_CREATED)

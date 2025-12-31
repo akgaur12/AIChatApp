@@ -47,7 +47,7 @@ class Conversation(ConversationBase):
 
 
 class UserInput(BaseModel):
-    service_name: str
+    service_name: str = "chat"
     user_query: str
     conversation_id: str | None = None
 

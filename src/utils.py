@@ -15,7 +15,7 @@ def load_config(filename="config.yml"):
 
 # Load configuration
 cfg = load_config()
-SECRET_KEY = os.getenv("SECRET_KEY")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY") 
 ALGORITHM = cfg["Security"]["ALGORITHM"]
 ACCESS_TOKEN_EXPIRE_MINUTES = cfg["Security"]["ACCESS_TOKEN_EXPIRE_MINUTES"]
 
