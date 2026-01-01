@@ -1,0 +1,91 @@
+# .gitattributes tells Git how to behave with different files 🧠✨
+# .gitignore ❌ → “Don’t put this in bag”
+# .gitattributes 📖 → “How to treat what’s in bag”
+
+# Global settings
+* text=auto
+
+# Source code
+# Python
+*.py            text
+*.pyi           text
+
+# FastAPI / Backend configs
+*.ini           text
+*.cfg           text
+*.toml          text
+*.yaml          text
+*.yml           text
+*.json          text
+
+# Notebooks (treat as text, but no noisy diffs)
+*.ipynb         text diff=ipynb
+
+# Shell & scripts
+# Linux / Mac
+*.sh            text eol=lf
+# Windows
+*.bat           text eol=crlf
+*.ps1           text eol=crlf
+
+# Docker & DevOps
+Dockerfile      text
+*.dockerfile    text
+*.env           text
+.env.example    text
+
+# Documentation
+*.md            text
+*.rst           text
+*.txt           text
+
+# Data files
+*.csv           text
+*.tsv           text
+*.parquet       binary
+*.feather       binary
+*.avro          binary
+
+# ML / AI model artifacts (binary)
+*.pt            binary
+*.pth           binary
+*.ckpt          binary
+*.onnx          binary
+*.h5            binary
+*.pb            binary
+*.joblib        binary
+*.pkl           binary
+*.safetensors   binary
+*.gguf          binary
+
+# Vector DB / embeddings
+*.faiss         binary
+*.index         binary
+
+# Images / media
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.svg           text
+*.mp4           binary
+*.wav           binary
+
+# Archives
+*.zip           binary
+*.tar           binary
+*.gz            binary
+*.7z            binary
+
+# Logs & generated files
+*.log           -text
+
+# Lock files (avoid merge conflicts)
+poetry.lock     merge=ours
+Pipfile.lock    merge=ours
+package-lock.json merge=ours
+
+# GitHub Linguist (clean language stats)
+*.ipynb linguist-vendored
+data/** linguist-vendored
+models/** linguist-vendored
