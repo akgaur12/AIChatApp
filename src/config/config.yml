@@ -22,6 +22,12 @@ Security:
     ACCESS_TOKEN_EXPIRE_MINUTES: 360 # 6 hours
 
 
+# Email Configuration
+Email:
+    SMTP_SERVER: "smtp.gmail.com"
+    SMTP_PORT: 587
+    
+
 # Logging Configuration
 Logging:
     LOG_DIR: "logs"

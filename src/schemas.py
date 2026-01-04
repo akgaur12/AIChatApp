@@ -1,3 +1,8 @@
+"""
+This file contains all the Pydantic models used in the application.
+BaseModel: A strict gatekeeper at the API door. BaseModel ensures your app only works with valid, typed, trusted data.
+"""
+
 from pydantic import BaseModel, EmailStr, Field
 
 class UserCreate(BaseModel):
@@ -14,6 +19,14 @@ class Token(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     old_password: str = Field(min_length=6)
+    new_password: str = Field(min_length=6)
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordWithOTP(BaseModel):
+    email: EmailStr
+    otp: str
     new_password: str = Field(min_length=6)
 
 

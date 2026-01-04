@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Mock Auth Dependency
 async def mock_get_current_user():
@@ -30,8 +30,8 @@ def test_create_conversation(test_client, mock_user_id):
             "user_id": mock_user_id,
             "title": "New Chat",
             "messages": [],
-            "created_at": datetime.now().isoformat(),
-            "updated_at": datetime.now().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         
         response = test_client.post("/chat/conversations", json={"title": "New Chat"})

@@ -1,6 +1,6 @@
 import logging, asyncio
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 
 from bson import ObjectId
 from openai import OpenAI
@@ -14,16 +14,15 @@ from src.database import conversations_collection
 from src.schemas import ConversationCreate, ConversationUpdate, Conversation, UserInput, UserQueryResponse
 
 
-
 logger = logging.getLogger(__name__)
 cfg = load_config(filename="config.yml")
 
+# Create API router
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
-def get_current_timestamp():
-    # return datetime.utcnow().isoformat()
-    return datetime.now().isoformat()
+def get_current_timestamp() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 def serialize_conversation(conversation) -> Conversation:
     return Conversation(
