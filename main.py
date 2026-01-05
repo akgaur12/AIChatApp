@@ -1,12 +1,14 @@
 import os, sys, logging, subprocess
 from logging.handlers import RotatingFileHandler
 from fastapi import FastAPI, Request, status, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+
 
 from src.api_router import chat_router, user_router
 from src.utils import load_config
 from src.lifespan import lifespan
+from src.logger import setup_logging
 
 cfg = load_config(filename="config.yml")
 
@@ -17,26 +19,15 @@ LOG_LEVEL = cfg["FastAPI"]["LOG_LEVEL"]
 TIMEOUT = cfg["FastAPI"]["TIMEOUT"]
 GRACEFUL_TIMEOUT = cfg["FastAPI"]["GRACEFUL_TIMEOUT"]
 
-LOG_DIR = cfg["Logging"]["LOG_DIR"]
-LOG_FILE_NAME = cfg["Logging"]["LOG_FILE_NAME"]
-MAX_FILE_SIZE = cfg["Logging"]["MAX_FILE_SIZE"]
-MAX_FILE_COUNT = cfg["Logging"]["MAX_FILE_COUNT"] 
-LOG_FORMAT = cfg["Logging"]["LOG_FORMAT"]
-
-
-# Create logs directory if it does not exist
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format=LOG_FORMAT,
-    handlers=[logging.StreamHandler(sys.stdout), RotatingFileHandler(LOG_DIR + "/" + LOG_FILE_NAME, maxBytes=MAX_FILE_SIZE, backupCount=MAX_FILE_COUNT)],
-)
+# Initialize logging
+setup_logging()
 logger = logging.getLogger(__name__)
 
+# Set log levels for specific libraries to WARNING to reduce verbosity
 # logging.getLogger("httpx").setLevel(logging.WARNING)
+# logging.getLogger("gunicorn").setLevel(logging.WARNING)
+# logging.getLogger("uvicorn").setLevel(logging.WARNING)
+# logging.getLogger("primp").setLevel(logging.WARNING)
 
 
 # Initialize FastAPI application
@@ -54,6 +45,11 @@ app.add_middleware(
 # Include API routers
 app.include_router(chat_router.router)
 app.include_router(user_router.router)
+
+
+@app.get("/")
+def home():
+    return RedirectResponse(url="/docs")
 
 
 

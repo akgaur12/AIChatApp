@@ -31,7 +31,11 @@ Email:
 # Logging Configuration
 Logging:
     LOG_DIR: "logs"
-    LOG_FILE_NAME: "app.log"
+    LOG_LEVEL: "info"
+    DEBUG_LOG_FILE_NAME: "aichatapp-debug.log"
+    INFO_LOG_FILE_NAME: "aichatapp-info.log"
+    WARNING_LOG_FILE_NAME: "aichatapp-warning.log"
+    ERROR_LOG_FILE_NAME: "aichatapp-error.log"
     MAX_FILE_SIZE: 5242880   # 5 MB in bytes
     MAX_FILE_COUNT: 10       # 10 files
     LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -44,7 +48,7 @@ Services:
 
 # LLM Configuration
 LLM:
-    Provider: "vllm"
+    Provider: "ollama"
     ollama:
         BASE_URL: "http://0.0.0.0:11434"
         MODEL: "nemotron-3-nano:30b-cloud"

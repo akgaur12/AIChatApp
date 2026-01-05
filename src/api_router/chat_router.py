@@ -42,9 +42,7 @@ async def generate_title(user_query: str) -> str:
                     "content": "You are a helpful assistant. Generate a short, 3-5 word title for a conversation that starts with the following user query. Do not use quotes."
                 },
                 {"role": "user", "content": user_query}
-            ],  
-            max_tokens=100, 
-            temperature=0.7 
+            ]
         )
       
         # Remove quotes if present
