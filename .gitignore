@@ -14,5 +14,12 @@ wheels/
 *.env
 *.lock
 *.log
+*.log.*
+
+
+# myDirectory
+logs/
+reports/
+artifacts/
 
 
