@@ -31,11 +31,12 @@ class ResetPasswordWithOTP(BaseModel):
 
 
 class Message(BaseModel):
+    id: str | None = None
+    chat_id: str
     user: str
     assistant: str
-    input_tokens: int
-    output_tokens: int
-    response_time: float
+    created_at: str
+    seq: int | None = None
 
 class ConversationBase(BaseModel):
     title: str = Field(
@@ -55,6 +56,7 @@ class Conversation(ConversationBase):
     id: str
     user_id: str
     messages: list[Message] = []
+    message_count: int = 0
     created_at: str
     updated_at: str
 
