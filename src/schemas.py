@@ -35,6 +35,9 @@ class Message(BaseModel):
     chat_id: str
     user: str
     assistant: str
+    input_tokens: int = 0
+    output_tokens: int = 0
+    response_time: float = 0.0
     created_at: str
     seq: int | None = None
 

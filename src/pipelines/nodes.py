@@ -49,11 +49,19 @@ async def web_search_node(state: PipelineState):
         prompt = prompt.format(web_content=web_content, user_input=state["user_input"])
 
         # Invoke the LLM
-        response = await llm_model.ainvoke(prompt)
-        response = response.content if hasattr(response, "content") else str(response)
+        start_time = time.perf_counter()
+        response = await llm_model.ainvoke([HumanMessage(content=prompt)])
+        end_time = time.perf_counter()
+        
+        content = response.content if hasattr(response, "content") else str(response)
+        state["response_time"] = round(end_time - start_time, 3)
+        
+        if hasattr(response, "usage_metadata") and response.usage_metadata:
+            state["input_tokens"] = response.usage_metadata.get("input_tokens", 0)
+            state["output_tokens"] = response.usage_metadata.get("output_tokens", 0)
 
         # Combine response and links
-        final_response = response.strip() + links_section
+        final_response = content.strip() + links_section
 
         # Store the final response in the state
         state["llm_response"] = final_response
@@ -61,7 +69,7 @@ async def web_search_node(state: PipelineState):
 
     except Exception as e:
         logger.error(f"Failed to fetch web search results: {e}")
-        response = await llm_model.ainvoke(state["user_input"])
+        response = await llm_model.ainvoke([HumanMessage(content=state["user_input"])])
         state["llm_response"] = response.content if hasattr(response, "content") else str(response) 
         return state
 

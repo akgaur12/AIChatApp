@@ -59,6 +59,7 @@ LLM:
         FREQUENCY_PENALTY: 0.0
         PRESENCE_PENALTY: 0.0
         REASONING_EFFORT: "low"
+        MODEL_TYPE: "instruct" # instruct, chat, reasoning
 
     vllm:                                                
         API_KEY: "EMPTY"
@@ -70,6 +71,8 @@ LLM:
         FREQUENCY_PENALTY: 0.0
         PRESENCE_PENALTY: 0.0
         REASONING_EFFORT: "low"
+        MODEL_TYPE: "reasoning"
+
 
     aws_bedrock:
         AWS_REGION: "ap-south-1"
@@ -80,10 +83,13 @@ LLM:
         FREQUENCY_PENALTY: 0.0
         PRESENCE_PENALTY: 0.0
         REASONING_EFFORT: "low"
+        MODEL_TYPE: "reasoning" 
+
 
     groq:
         MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
         MAX_TOKENS: 4096
         TEMPERATURE: 0.5
         REASONING_EFFORT: "low"
+        MODEL_TYPE: "instruct" # instruct, chat, reasoning
 

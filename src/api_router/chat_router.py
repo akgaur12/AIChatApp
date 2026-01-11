@@ -12,6 +12,7 @@ from src.pipelines.builder import pipeline
 from src.services.models import llm_model
 from src.database import conversations_collection, messages_collection
 from src.schemas import ConversationCreate, ConversationUpdate, Conversation, UserInput, UserQueryResponse, Message
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 
 logger = logging.getLogger(__name__)
@@ -38,11 +39,8 @@ def serialize_conversation(conversation, messages=None) -> Conversation:
 async def generate_title(user_query: str) -> str:
     try:        
         response = await llm_model.ainvoke([
-                {
-                    "role": "system", 
-                    "content": "You are a helpful assistant. Generate a short, 3-5 word title for a conversation that starts with the following user query. Do not use quotes."
-                },
-                {"role": "user", "content": user_query}
+                SystemMessage(content="You are a helpful assistant. Generate a short, 3-5 word title for a conversation that starts with the following user query. Do not use quotes."),
+                HumanMessage(content=user_query)
             ]
         )
       
@@ -94,11 +92,11 @@ async def execute_user_query(
         
         db_turns.reverse() # Restore chronological order
         for turn in db_turns:
-            llm_messages.append({"role": "user", "content": turn["user"]})
-            llm_messages.append({"role": "assistant", "content": turn["assistant"]})
+            llm_messages.append(HumanMessage(content=turn["user"]))
+            llm_messages.append(AIMessage(content=turn["assistant"]))
     
     # Append current user message for LLM context
-    llm_messages.append({"role": "user", "content": user_prompt})
+    llm_messages.append(HumanMessage(content=user_prompt))
 
     # Call pipeline
     response = await pipeline.ainvoke(
@@ -144,6 +142,9 @@ async def execute_user_query(
         "chat_id": conversation_id,
         "user": user_prompt,
         "assistant": assistant_content,
+        "input_tokens": response.get("input_tokens", 0),
+        "output_tokens": response.get("output_tokens", 0),
+        "response_time": response.get("response_time", 0.0),
         "created_at": timestamp,
         "seq": seq
     }
@@ -210,6 +211,9 @@ async def get_conversion_by_id(
             chat_id=turn["chat_id"],
             user=turn["user"],
             assistant=turn["assistant"],
+            input_tokens=turn.get("input_tokens", 0),
+            output_tokens=turn.get("output_tokens", 0),
+            response_time=turn.get("response_time", 0.0),
             created_at=turn["created_at"],
             seq=turn.get("seq")
         ))

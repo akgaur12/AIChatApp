@@ -24,7 +24,7 @@ if inference_type == "ollama":
         model = ollama_cfg["MODEL"],
         base_url = ollama_cfg["BASE_URL"],
         temperature = ollama_cfg["TEMPERATURE"],
-        reasoning_effort = ollama_cfg["REASONING_EFFORT"],
+        reasoning_effort = ollama_cfg["REASONING_EFFORT"] if ollama_cfg["MODEL_TYPE"] == "reasoning" else None,
     )
 
 elif inference_type == "vllm":
@@ -34,7 +34,7 @@ elif inference_type == "vllm":
         openai_api_key = vllm_cfg["API_KEY"],
         openai_api_base = vllm_cfg["BASE_URL"],
         temperature = vllm_cfg["TEMPERATURE"],
-        reasoning_effort = vllm_cfg["REASONING_EFFORT"],
+        reasoning_effort = vllm_cfg["REASONING_EFFORT"] if vllm_cfg["MODEL_TYPE"] == "reasoning" else None,
     )
 
 elif inference_type == "aws_bedrock":
@@ -45,7 +45,7 @@ elif inference_type == "aws_bedrock":
         model_id = aws_bedrock_cfg["MODEL"],
         region_name = aws_bedrock_cfg["AWS_REGION"],
         temperature = aws_bedrock_cfg["TEMPERATURE"],
-        additional_model_request_fields = {"reasoning_effort": aws_bedrock_cfg["REASONING_EFFORT"]},
+        additional_model_request_fields = {"reasoning_effort": aws_bedrock_cfg["REASONING_EFFORT"] if aws_bedrock_cfg["MODEL_TYPE"] == "reasoning" else None},
     )
 
 elif inference_type == "groq":
@@ -54,7 +54,7 @@ elif inference_type == "groq":
         api_key = GROQ_API_KEY,
         model = groq_cfg["MODEL"],
         temperature = groq_cfg["TEMPERATURE"],
-        reasoning_effort = groq_cfg["REASONING_EFFORT"],
+        reasoning_effort = groq_cfg["REASONING_EFFORT"] if groq_cfg["MODEL_TYPE"] == "reasoning" else None,
     )
 
 else:
