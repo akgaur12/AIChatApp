@@ -4,6 +4,8 @@ from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from langchain_aws import ChatBedrockConverse
+from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
 
 from src.utils import load_config
 
@@ -17,6 +19,7 @@ inference_type = llm_cfg["Provider"].lower()
 AWS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET = os.getenv("AWS_SECRET_ACCESS_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 
 if inference_type == "ollama":
     ollama_cfg = llm_cfg["ollama"]
@@ -57,6 +60,13 @@ elif inference_type == "groq":
         reasoning_effort = groq_cfg["REASONING_EFFORT"] if groq_cfg["MODEL_TYPE"] == "reasoning" else None,
     )
 
+elif inference_type == "nvidia":
+    nvidia_cfg = llm_cfg["nvidia"]
+    llm_model = ChatNVIDIA(
+        api_key = NVIDIA_API_KEY,
+        model = nvidia_cfg["MODEL"],
+        temperature = nvidia_cfg["TEMPERATURE"],
+    )
 else:
     raise ValueError(f"Invalid inference type: {inference_type}")
 
