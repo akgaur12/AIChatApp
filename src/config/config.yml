@@ -75,7 +75,6 @@ LLM:
         REASONING_EFFORT: "low"
         MODEL_TYPE: "reasoning"
 
-
     aws_bedrock:
         AWS_REGION: "ap-south-1"
         MODEL: "openai.gpt-oss-20b-1:0"
@@ -87,7 +86,6 @@ LLM:
         REASONING_EFFORT: "low"
         MODEL_TYPE: "reasoning" 
 
-
     groq:
         MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
         MAX_TOKENS: 4096
@@ -95,11 +93,38 @@ LLM:
         REASONING_EFFORT: "low"
         MODEL_TYPE: "instruct"
 
-
     nvidia:
         MODEL: "nvidia/nemotron-nano-12b-v2-vl"
         MAX_TOKENS: 4096
         TEMPERATURE: 0.5
         REASONING_EFFORT: "low"
         MODEL_TYPE: "instruct"
+
+    google:
+        MODEL: "gemini-2.0-flash"
+        MAX_TOKENS: 4096
+        TEMPERATURE: 0.5
+        REASONING_EFFORT: "low"
+        MAX_RETRIES: 2
+        MODEL_TYPE: "instruct"
+
+    huggingface:
+        MODEL: "openai/gpt-oss-20b"
+        MAX_TOKENS: 4096
+        TEMPERATURE: 0.5
+        REASONING_EFFORT: "low"
+        MODEL_TYPE: "text-generation"
+        STREAMING: False
+        PROVIDER: "auto" # let Hugging Face choose the best provider for you
+
+    llamacpp:
+        MODEL: "reports/qwen2.5-1.5b-instruct-q4_k_m.gguf" # Path to the local model file
+        MAX_TOKENS: 4096       # Maximum number of tokens to generate
+        TEMPERATURE: 0.5       # controls how random the choice is; lower = more deterministic, higher = more creative
+        N_CTX: 512             # Number of tokens to keep in the context
+        N_GPU_LAYERS: -1       # -1 = all layers on GPU
+        N_BATCH: 300           # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
+        REPEAT_PENALTY: 1.5    # Reduces repeated words; higher = less repetition, 1.0 = no penalty, 1.2 = 20% penalty
+        TOP_P: 0.5             # Controls creativity; lower = more focused responses (controls how many choices are allowed)
+        VERBOSE: True          # Enable verbose output
 
