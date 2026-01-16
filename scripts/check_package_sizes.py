@@ -9,11 +9,11 @@ import importlib.metadata as md
 from tqdm import tqdm
 
 
-REPORT_DIR = Path("reports") # artifacts, reports, 
-REPORT_DIR.mkdir(exist_ok=True)
+ARTIFACTS_DIR = Path("artifacts") 
+ARTIFACTS_DIR.mkdir(exist_ok=True)
 
-OUTPUT_TEXT_FILE = REPORT_DIR / "package_sizes.txt"
-OUTPUT_JSON_FILE = REPORT_DIR / "package_sizes.json"
+OUTPUT_TEXT_FILE = ARTIFACTS_DIR / "package_sizes.txt"
+OUTPUT_JSON_FILE = ARTIFACTS_DIR / "package_sizes.json"
 
 
 def get_package_folder(package_name: str):
