@@ -9,9 +9,57 @@ from src.pipelines.pipeline_state import PipelineState
 logger = logging.getLogger(__name__)
 
 
+# async def select_tool_node(state: PipelineState):
+#     if state["service_name"] == "web_search":
+#         return state
+#     else:
+#         user_input = state["user_input"]
+#         prompt = f"Does this query require real-time web search for an accurate answer? Query: {user_input}. Answer 'yes' or 'no'."
+#         response = await llm_model.ainvoke(prompt)
+
+#         state["service_name"] = "web_search" if "yes" in response.content.lower() else "chat"
+#         logger.info(f"Selected service: {state['service_name']}")
+
+#     return state
+
+
+async def select_tool_node(state: PipelineState):
+    if state["service_name"] == "web_search":
+        return state
+    else:
+        user_input = state["user_input"].lower()
+        
+        # Keywords that suggest a need for real-time information
+        search_keywords = [
+            "current", "now", "today", "latest", "news", "weather", 
+            "price", "stock", "exchange rate", "score", "live",
+            "who is", "what is", "tell me about"
+        ]
+        
+        # Check if any keyword is in the user input
+        if any(keyword in user_input for keyword in search_keywords):
+            state["service_name"] = "web_search"
+        
+        return state
+    
+
+
 async def chat_node(state: PipelineState):
+    start_time = time.perf_counter()
     response = await llm_model.ainvoke(state["llm_messages"])
-    state["llm_response"] = response.content if hasattr(response, "content") else str(response) 
+    end_time = time.perf_counter()
+
+    with open("artifacts/response.txt", "a") as f:
+        f.write(str(response))
+    
+    state["llm_response"] = response.content if hasattr(response, "content") else str(response)
+    state["response_time"] = round(end_time - start_time, 3)
+    
+    if hasattr(response, "usage_metadata") and response.usage_metadata:
+        state["input_tokens"] = response.usage_metadata.get("input_tokens", 0)
+        state["output_tokens"] = response.usage_metadata.get("output_tokens", 0)
+
+        
     return state
 
 

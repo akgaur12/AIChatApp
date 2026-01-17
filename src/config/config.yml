@@ -118,7 +118,7 @@ LLM:
         PROVIDER: "auto" # let Hugging Face choose the best provider for you
 
     llamacpp:
-        MODEL: "reports/qwen2.5-1.5b-instruct-q4_k_m.gguf" # Path to the local model file
+        MODEL: "artifacts/qwen2.5-1.5b-instruct-q4_k_m.gguf" # Path to the local model file
         MAX_TOKENS: 4096       # Maximum number of tokens to generate
         TEMPERATURE: 0.5       # controls how random the choice is; lower = more deterministic, higher = more creative
         N_CTX: 512             # Number of tokens to keep in the context
