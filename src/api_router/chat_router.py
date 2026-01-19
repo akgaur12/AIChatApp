@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from src.utils import load_config
 from src.deps import get_current_user
 from src.pipelines.builder import pipeline
-from src.services.models import llm_model
+from src.clients.llm_client import llm_model
+from src.llms.llm_parser import parse_response
 from src.database import conversations_collection, messages_collection
 from src.schemas import ConversationCreate, ConversationUpdate, Conversation, UserInput, UserQueryResponse, Message
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -45,7 +46,8 @@ async def generate_title(user_query: str) -> str:
         )
       
         # Remove quotes if present
-        title = response.content
+        parsed = parse_response(response)
+        title = parsed.content
         if title.startswith('"') and title.endswith('"'):
             title = title[1:-1]
         return title

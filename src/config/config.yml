@@ -94,7 +94,7 @@ LLM:
         MODEL_TYPE: "instruct"
 
     nvidia:
-        MODEL: "nvidia/nemotron-nano-12b-v2-vl"
+        MODEL: "nvidia/llama-3.1-nemotron-nano-vl-8b-v1"
         MAX_TOKENS: 4096
         TEMPERATURE: 0.5
         REASONING_EFFORT: "low"

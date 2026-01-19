@@ -3,7 +3,8 @@ from ddgs import DDGS
 from langchain_core.prompts import PromptTemplate
 from langchain_core.messages import HumanMessage
 
-from src.services.models import llm_model
+from src.clients.llm_client import llm_model
+from src.llms.llm_parser import parse_response
 from src.pipelines.pipeline_state import PipelineState
 
 logger = logging.getLogger(__name__)
@@ -49,17 +50,18 @@ async def chat_node(state: PipelineState):
     response = await llm_model.ainvoke(state["llm_messages"])
     end_time = time.perf_counter()
 
-    with open("artifacts/response.txt", "a") as f:
-        f.write(str(response))
+    parsed_response = parse_response(response)
+
+    # with open("artifacts/response.txt", "a") as f:
+    #     f.write(str(parsed_response.content))
     
-    state["llm_response"] = response.content if hasattr(response, "content") else str(response)
+    state["llm_response"] = parsed_response.content
     state["response_time"] = round(end_time - start_time, 3)
     
-    if hasattr(response, "usage_metadata") and response.usage_metadata:
-        state["input_tokens"] = response.usage_metadata.get("input_tokens", 0)
-        state["output_tokens"] = response.usage_metadata.get("output_tokens", 0)
+    if parsed_response.response_metadata:
+        state["input_tokens"] = parsed_response.response_metadata.get("input_tokens", 0)
+        state["output_tokens"] = parsed_response.response_metadata.get("output_tokens", 0)
 
-        
     return state
 
 
@@ -102,12 +104,13 @@ async def web_search_node(state: PipelineState):
         response = await llm_model.ainvoke([HumanMessage(content=prompt)])
         end_time = time.perf_counter()
         
-        content = response.content if hasattr(response, "content") else str(response)
+        parsed_response = parse_response(response)
+        content = parsed_response.content
         state["response_time"] = round(end_time - start_time, 3)
         
-        if hasattr(response, "usage_metadata") and response.usage_metadata:
-            state["input_tokens"] = response.usage_metadata.get("input_tokens", 0)
-            state["output_tokens"] = response.usage_metadata.get("output_tokens", 0)
+        if parsed_response.response_metadata:
+            state["input_tokens"] = parsed_response.response_metadata.get("input_tokens", 0)
+            state["output_tokens"] = parsed_response.response_metadata.get("output_tokens", 0)
 
         # Combine response and links
         final_response = content.strip() + links_section
@@ -119,7 +122,8 @@ async def web_search_node(state: PipelineState):
     except Exception as e:
         logger.error(f"Failed to fetch web search results: {e}")
         response = await llm_model.ainvoke([HumanMessage(content=state["user_input"])])
-        state["llm_response"] = response.content if hasattr(response, "content") else str(response) 
+        parsed_response = parse_response(response)
+        state["llm_response"] = parsed_response.content 
         return state
 
 
