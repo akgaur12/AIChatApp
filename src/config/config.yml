@@ -1,7 +1,7 @@
 # FastAPI Server Configuration
 FastAPI:
     HOST: "0.0.0.0"
-    PORT: "8000"
+    PORT: "45001"
     WORKERS: "2"
     LOG_LEVEL: "info"
     TIMEOUT: "240"
@@ -40,11 +40,13 @@ Logging:
     MAX_FILE_SIZE: 5242880   # 5 MB in bytes
     MAX_FILE_COUNT: 10       # 10 files
     LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    NOISY_LOGGERS: ["httpx", "gunicorn", "uvicorn", "uvicorn.access", "mcp.client.sse", "primp", "langchain_aws.chat_models.bedrock_converse"]
+
 
 
 # Services Configuration
 Services:
-    SUPPORTED_SERVICES: ["chat", "web_search"]
+    SUPPORTED_SERVICES: ["chat", "web_search", "thinking"]
     SUPPORTED_MODEL_TYPE: ["instruct", "chat", "reasoning"]
     SUPPORTED_LLM_PROVIDER: ["ollama", "vllm", "aws_bedrock", "groq", "nvidia", "openai", "llamacpp", "google", "huggingface"]
 
@@ -54,7 +56,7 @@ LLM:
     Provider: "ollama"
     ollama:
         BASE_URL: "http://0.0.0.0:11434"
-        MODEL: "nemotron-3-nano:30b-cloud"
+        MODEL: "gpt-oss:20b-cloud" #"nemotron-3-nano:30b-cloud"
         MAX_TOKENS: 4096
         TEMPERATURE: 0.5
         TOP_P: 1.0
@@ -87,7 +89,7 @@ LLM:
         MODEL_TYPE: "reasoning" 
 
     groq:
-        MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
+        MODEL: "openai/gpt-oss-20b" #"meta-llama/llama-4-scout-17b-16e-instruct"
         MAX_TOKENS: 4096
         TEMPERATURE: 0.5
         REASONING_EFFORT: "low"

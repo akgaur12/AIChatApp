@@ -22,17 +22,11 @@ def parse_response(llm_response: Any, inference_type: str = default_inference_ty
         reasoning_content = llm_response.content[0].get("reasoning_content", {}).get("text")
         metadata = getattr(llm_response, "usage_metadata", {}) or {}
 
-    elif inference_type == "nvidia":
-        content = getattr(llm_response, "content", "")
-        reasoning_content = getattr(
-            llm_response, "response_metadata", {}
-        ).get("reasoning_content")
-        metadata = getattr(llm_response, "usage_metadata", {}) or {}
-
-    else:  # ollama, vllm, groq, google, huggingface
-        content = getattr(llm_response, "content", str(llm_response))
-        reasoning_content = getattr(llm_response, "reasoning_content", None)
-        metadata = getattr(llm_response, "usage_metadata", {}) or {}
+    else:  # Langchain Type: ollama, vllm, groq, google, huggingface, nvidia
+        # content = getattr(llm_response, "content", str(llm_response))
+        # reasoning_content = getattr(llm_response, "additional_kwargs", {}).get("reasoning_content")
+        # metadata = getattr(llm_response, "usage_metadata", {}) or {}
+        return llm_response
 
     return AIMessage(
         content=content or "",

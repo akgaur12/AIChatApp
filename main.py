@@ -3,12 +3,16 @@ from logging.handlers import RotatingFileHandler
 from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from src.logger import setup_logging
+
+# Initialize logging immediately
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 from src.api_router import chat_router, user_router
 from src.utils import load_config
 from src.lifespan import lifespan
-from src.logger import setup_logging
 
 cfg = load_config(filename="config.yml")
 
@@ -19,15 +23,10 @@ LOG_LEVEL = cfg["FastAPI"]["LOG_LEVEL"]
 TIMEOUT = cfg["FastAPI"]["TIMEOUT"]
 GRACEFUL_TIMEOUT = cfg["FastAPI"]["GRACEFUL_TIMEOUT"]
 
-# Initialize logging
-setup_logging()
-logger = logging.getLogger(__name__)
 
 # Set log levels for specific libraries to WARNING to reduce verbosity
-# logging.getLogger("httpx").setLevel(logging.WARNING)
-# logging.getLogger("gunicorn").setLevel(logging.WARNING)
-# logging.getLogger("uvicorn").setLevel(logging.WARNING)
-# logging.getLogger("primp").setLevel(logging.WARNING)
+for logger_name in cfg["Logging"]["NOISY_LOGGERS"]:
+    logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 
 # Initialize FastAPI application
@@ -91,6 +90,3 @@ def main():
 # Run the server
 if __name__ == "__main__":
     main()
-
-
-

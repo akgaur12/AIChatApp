@@ -105,7 +105,7 @@ def test_execute_user_query_new_conversation(test_client, mock_user_id):
         mock_conv_collection.insert_one = AsyncMock(return_value=mock_inserted)
         mock_msg_collection.insert_one = AsyncMock()
         
-        response = test_client.post("/chat/execute_user_query", json={
+        response = test_client.post("/chat/run_pipeline", json={
             "user_query": "Hello",
             "service_name": "chat"
         })

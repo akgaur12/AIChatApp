@@ -34,13 +34,17 @@ async def select_tool_node(state: PipelineState):
         search_keywords = [
             "current", "now", "today", "latest", "news", "weather", 
             "price", "stock", "exchange rate", "score", "live",
-            "who is", "what is", "tell me about"
+            "who is"
         ]
+
+        self_inquery = ["who are you", "what are you", "tell me about you", "what is your name", "who is you"]
         
         # Check if any keyword is in the user input
         if any(keyword in user_input for keyword in search_keywords):
             state["service_name"] = "web_search"
         
+        if any(keyword in user_input for keyword in self_inquery):
+            state["service_name"] = "self"
         return state
     
 
@@ -53,7 +57,8 @@ async def chat_node(state: PipelineState):
     parsed_response = parse_response(response)
 
     # with open("artifacts/response.txt", "a") as f:
-    #     f.write(str(parsed_response.content))
+    #     f.write(str(parsed_response))
+    #     f.write("\n\n")
     
     state["llm_response"] = parsed_response.content
     state["response_time"] = round(end_time - start_time, 3)
@@ -126,4 +131,50 @@ async def web_search_node(state: PipelineState):
         state["llm_response"] = parsed_response.content 
         return state
 
+
+
+async def self_node(state: PipelineState):
+       # Prompt template
+        prompt = PromptTemplate.from_template("""
+You are SannaAI, a smart, friendly, and professional AI assistant developed by Akash Gaur.
+
+Your role is to respond ONLY to self-inquiry type questions such as:
+- "who are you"
+- "what are you"
+- "tell me about you"
+- "what is your name"
+- "who is you"
+
+When answering:
+- Clearly introduce yourself as **SannaAI**.
+- Mention that you are an AI assistant created to help with coding, writing, analysis, and problem-solving.
+- Keep your tone warm, confident, and intelligent.
+- Do not answer unrelated or general questions. If the question is outside self-inquiry, politely say that this prompt is only for identity-related questions.
+
+Example style:
+"I am SannaAI, a powerful AI assistant developed by Akash Gaur. I’m designed to help you with coding, writing, analysis, and smart problem-solving."
+
+User Question:
+{user_input}
+""")
+
+        # Format the prompt
+        prompt = prompt.format(user_input=state["user_input"])
+
+        # Invoke the LLM
+        start_time = time.perf_counter()
+        response = await llm_model.ainvoke([HumanMessage(content=prompt)])
+        end_time = time.perf_counter()
+        
+        parsed_response = parse_response(response)
+        content = parsed_response.content
+        state["response_time"] = round(end_time - start_time, 3)
+        
+        if parsed_response.response_metadata:
+            state["input_tokens"] = parsed_response.response_metadata.get("input_tokens", 0)
+            state["output_tokens"] = parsed_response.response_metadata.get("output_tokens", 0)
+
+        # Store the final response in the state
+        state["llm_response"] = content
+        return state
 
