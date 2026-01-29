@@ -1,6 +1,7 @@
 import os, logging
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 from src.database import users_collection
 from src.schemas import UserCreate, UserLogin, Token, ResetPasswordRequest, ForgotPasswordRequest, ResetPasswordWithOTP
@@ -21,6 +22,7 @@ async def signup(user: UserCreate):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     new_user = {
+        "name": user.name,
         "email": user.email,
         "hashed_password": hash_password(user.password)
     }
@@ -30,7 +32,30 @@ async def signup(user: UserCreate):
 
 
 # ---------------- LOGIN ----------------
+# Swagger/OAuth2 login
 @router.post("/login", response_model=Token)
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    # Swagger sends username, not email
+    email = form_data.username
+    password = form_data.password
+
+    db_user = await users_collection.find_one({"email": email})
+
+    if not db_user or not verify_password(password, db_user["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+
+    access_token = create_access_token(data={"sub": db_user["email"], "name": db_user["name"]})
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+# frontend/JSON login
+@router.post("/login-json", response_model=Token)
 async def login(user: UserLogin):
     db_user = await users_collection.find_one({"email": user.email})
 
@@ -40,7 +65,7 @@ async def login(user: UserLogin):
             detail="Invalid email or password"
         )
 
-    access_token = create_access_token(data={"sub": db_user["email"]})
+    access_token = create_access_token(data={"sub": db_user["email"], "name": db_user["name"]})
 
     return {"access_token": access_token}
 

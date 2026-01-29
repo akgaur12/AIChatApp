@@ -60,11 +60,12 @@ def test_login_success(test_client):
          patch("src.api_router.user_router.verify_password", return_value=True):
         
         mock_collection.find_one = AsyncMock(return_value={
+            "name": "Test User",
             "email": "test@example.com", 
             "hashed_password": "hashed"
         })
         
-        response = test_client.post("/auth/login", json={
+        response = test_client.post("/auth/login-json", json={
             "email": "test@example.com",
             "password": "password"
         })
@@ -76,7 +77,7 @@ def test_login_invalid(test_client):
     with patch("src.api_router.user_router.users_collection") as mock_collection:
         mock_collection.find_one = AsyncMock(return_value=None) # User not found
         
-        response = test_client.post("/auth/login", json={
+        response = test_client.post("/auth/login-json", json={
             "email": "wrong@example.com",
             "password": "password"
         })
