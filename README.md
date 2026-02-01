@@ -96,16 +96,34 @@ The application uses a combination of `config.yml` and environment variables.
     # GROQ API Key
     GROQ_API_KEY = "your-groq-api-key"
 
+    # NVIDIA API Key
+    NVIDIA_API_KEY = "your-nvidia-api-key"
+
+    # Google API Key
+    GOOGLE_API_KEY = "your-google-api-key"
+
+    # HuggingFace Access Token
+    HUGGINGFACEHUB_API_TOKEN = "your-huggingface-api-token"
+
     # Email Credentials
     SENDER_EMAIL = "your-email@gmail.com"
     SENDER_PASSWORD = "your-16-character-app-specific-password"
     ```
 
+    *Note: Replace the values with your actual credentials.*
+    
+    - For GROQ API Key, follow this link: [Generate GROQ API Key](https://console.groq.com/docs/models)
+    - For NVIDIA API Key, follow this link: [Generate NVIDIA API Key](https://build.nvidia.com/)
+    - For Google API Key, follow this link: [Generate Google API Key](https://ai.google.dev/gemini-api/docs/api-key)
+    - For Hugging Face API Key, follow this link: [Generate Hugging Face API Key](https://huggingface.co/docs/hub/security-tokens)
+    - For AWS Security Credentials, follow this link: [AWS security credentials](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html)
+    - For generating app-specific password (Gmail), follow this link: [Generate App-Specific Password](https://support.google.com/accounts/answer/185833?hl=en)
+   
 2.  **Application Config**: Edit `src/config/config.yml` to adjust server settings, logging, and LLM providers.
     ```yaml
     FastAPI:
       HOST: "0.0.0.0"
-      PORT: "8000"
+      PORT: "45001"
       WORKERS: "2"
     
     LLM:
@@ -182,6 +200,8 @@ These interfaces allow you to test endpoints directly from your browser.
 AIChatApp/
 ├── .venv/                      # Virtual Environment
 ├── logs/                       # Application Logs
+├── scripts/                    # Utility scripts
+├── tests/                      # Testing files
 ├── src/
 │   ├── api_router/             # API Route definitions (Chat, User)
 │   |   ├── chat_router.py      # Chat API Router
