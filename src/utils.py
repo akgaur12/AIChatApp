@@ -1,9 +1,17 @@
-from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
+# Standard library
+import os
+import random
+import smtplib
+import string
+from datetime import UTC, datetime, timedelta
+from email.message import EmailMessage
+
+# Third-party
+import bcrypt
+import yaml
 from dotenv import load_dotenv
 from jose import jwt
-import yaml, os, random, string, smtplib
-from email.message import EmailMessage
+
 
 # Load configuration from YAML file function
 def load_config(filename="config.yml"):
@@ -27,29 +35,36 @@ SMTP_PORT = cfg["Email"]["SMTP_PORT"]
 SENDER_EMAIL = os.getenv("SENDER_EMAIL") or cfg["Email"]["SENDER_EMAIL"]
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD") or cfg["Email"]["SENDER_PASSWORD"]
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt salt generation
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # Password hashing
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # bcrypt requires bytes
+    password_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 # Password verification
 def verify_password(password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(password, hashed_password)
+    # bcrypt requires bytes
+    password_bytes = password.encode('utf-8')
+    hashed_bytes = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(password_bytes, hashed_bytes)
 
 # JWT token creation
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
 
     # Set expiration time
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
 
     # Update token data
     to_encode.update({
         "exp": expire,
-        "iat": datetime.now(timezone.utc),
+        "iat": datetime.now(UTC),
     })
     
     # Encode and return token

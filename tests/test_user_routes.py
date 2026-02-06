@@ -119,16 +119,26 @@ def test_reset_password(test_client):
     app.dependency_overrides = {}
 
 def test_delete_user(test_client):
-    from src.api_router.user_router import get_current_user
     from main import app
+    from src.api_router.user_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
     
-    with patch("src.api_router.user_router.users_collection") as mock_collection:
-        mock_collection.delete_one = AsyncMock()
+    with patch("src.api_router.user_router.users_collection") as mock_users, \
+         patch("src.api_router.user_router.conversations_collection") as mock_convs, \
+         patch("src.api_router.user_router.messages_collection") as mock_msgs:
         
-        response = test_client.delete("/auth/delete")
+        mock_users.delete_one = AsyncMock()
+        mock_convs.delete_many = AsyncMock()
+        mock_msgs.delete_many = AsyncMock()
+        
+        # Mock cursor for find
+        mock_cursor = MagicMock()
+        mock_cursor.__aiter__.return_value = []
+        mock_convs.find.return_value = mock_cursor
+        
+        response = test_client.delete("/auth/delete-user")
         
         assert response.status_code == 200
-        assert response.json() == {"message": "User deleted successfully"}
+        assert response.json() == {"message": "User and all associated data deleted successfully"}
         
     app.dependency_overrides = {}

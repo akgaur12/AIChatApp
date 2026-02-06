@@ -6,8 +6,13 @@ BaseModel: A strict gatekeeper at the API door. BaseModel ensures your app only 
 from pydantic import BaseModel, EmailStr, Field
 
 class UserCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=20, default="New User") 
     email: EmailStr
     password: str = Field(min_length=6)
+    role: list[str] = Field(
+        default=["ROLE_USER"], 
+        json_schema_extra={"enum": ["ROLE_USER", "ROLE_ADMIN"]}
+    )
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -20,6 +25,9 @@ class Token(BaseModel):
 class ResetPasswordRequest(BaseModel):
     old_password: str = Field(min_length=6)
     new_password: str = Field(min_length=6)
+
+class UpdateUserNameRequest(BaseModel):
+    new_name: str = Field(min_length=1, max_length=20)
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr

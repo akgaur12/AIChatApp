@@ -1,13 +1,27 @@
-import os, logging
-from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, HTTPException, status, Depends
+import logging
+from datetime import UTC, datetime, timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.database import users_collection
-from src.schemas import UserCreate, UserLogin, Token, ResetPasswordRequest, ForgotPasswordRequest, ResetPasswordWithOTP
-from src.utils import hash_password, verify_password, create_access_token, generate_otp, send_otp_email
-from src.deps import get_current_user
-
+from src.database import conversations_collection, messages_collection, users_collection
+from src.deps import RoleChecker, get_current_user
+from src.schemas import (
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    ResetPasswordWithOTP,
+    Token,
+    UpdateUserNameRequest,
+    UserCreate,
+    UserLogin,
+)
+from src.utils import (
+    create_access_token,
+    generate_otp,
+    hash_password,
+    send_otp_email,
+    verify_password,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,15 +38,15 @@ async def signup(user: UserCreate):
     new_user = {
         "name": user.name,
         "email": user.email,
-        "hashed_password": hash_password(user.password)
+        "hashed_password": hash_password(user.password),
+        "role": ["ROLE_USER", "ROLE_ADMIN"] if "ROLE_ADMIN" in user.role else user.role
     }
 
     await users_collection.insert_one(new_user)
     return {"message": "User created successfully"}
 
 
-# ---------------- LOGIN ----------------
-# Swagger/OAuth2 login
+# ---------------- LOGIN (SWAGGER/OAUTH2) ----------------
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     # Swagger sends username, not email
@@ -54,9 +68,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         "token_type": "bearer"
     }
 
-# frontend/JSON login
+
+# ---------------- LOGIN-JSON (FRONTEND) ----------------
 @router.post("/login-json", response_model=Token)
-async def login(user: UserLogin):
+async def login_json(user: UserLogin):
     db_user = await users_collection.find_one({"email": user.email})
 
     if not db_user or not verify_password(user.password, db_user["hashed_password"]):
@@ -90,12 +105,44 @@ async def reset_password(data: ResetPasswordRequest, current_user=Depends(get_cu
     return {"message": "Password updated successfully"}
 
 
-# ---------------- DELETE USER ----------------
-@router.delete("/delete")
+# ---------------- UPDATE USER NAME ----------------
+@router.put("/update-user-name")
+async def update_user_name(data: UpdateUserNameRequest, current_user=Depends(get_current_user)):
+    
+    await users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"name": data.new_name}}
+    )
+
+    return {"message": "User name updated successfully"}
+
+
+# ---------------- DELETE ACCOUNT ----------------
+@router.delete("/delete-user")
 async def delete_user(current_user=Depends(get_current_user)):
-    print(current_user)
+    user_id = str(current_user["_id"])
+    
+    # 1. Find all conversations for this user to get their IDs
+    cursor = conversations_collection.find({"user_id": user_id}, {"_id": 1})
+    conversation_ids = [doc["_id"] async for doc in cursor] # extraction requires async iteration
+    
+    # 2. Convert ObjectIds to strings if stored as strings in messages (based on chat_router), 
+    #    but chat_router uses string conversation_id in messages. 
+    #    Let's check chat_router again: 
+    #    conversation_id = str(result.inserted_id) -> stored as string in messages "chat_id"
+    chat_ids_str = [str(cid) for cid in conversation_ids]
+
+    if chat_ids_str:
+        # 3. Delete all messages for these conversations
+        await messages_collection.delete_many({"chat_id": {"$in": chat_ids_str}})
+
+    # 4. Delete all conversations for this user
+    await conversations_collection.delete_many({"user_id": user_id})
+
+    # 5. Delete the user
     await users_collection.delete_one({"_id": current_user["_id"]})
-    return {"message": "User deleted successfully"}
+    
+    return {"message": "User and all associated data deleted successfully"}
 
 
 # ---------------- FORGOT PASSWORD ----------------
@@ -106,7 +153,7 @@ async def forget_password(request: ForgotPasswordRequest):
         raise HTTPException(status_code=404, detail="User not found")
 
     otp = generate_otp()
-    otp_expiry = datetime.now(timezone.utc) + timedelta(minutes=5)
+    otp_expiry = datetime.now(UTC) + timedelta(minutes=5)
 
     await users_collection.update_one(
         {"_id": user["_id"]},
@@ -132,7 +179,7 @@ async def verify_otp_reset_password(request: ResetPasswordWithOTP):
     if user["otp"] != request.otp:
         raise HTTPException(status_code=400, detail="Invalid OTP")
 
-    if datetime.now(timezone.utc) > user["otp_expiry"]:
+    if datetime.now(UTC) > user["otp_expiry"]:
         raise HTTPException(status_code=400, detail="OTP expired. Please request a new one.")
 
     await users_collection.update_one(
@@ -144,6 +191,13 @@ async def verify_otp_reset_password(request: ResetPasswordWithOTP):
     )
 
     return {"message": "Password reset successfully"}
+
+
+# ---------------- ADMIN ONLY ----------------
+@router.get("/admin-only")
+async def admin_only_route(admin_user=Depends(RoleChecker(["ROLE_ADMIN"]))):
+    return {"message": f"Hello Admin {admin_user['name']}, you have access!"}
+
 
 
 

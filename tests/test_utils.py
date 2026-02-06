@@ -6,11 +6,19 @@ Unit Tests: Test the smallest pieces of your code in isolation.
     - test_create_access_token: Tests if the access token is created correctly.
 """
 
-import pytest
-from src.utils import hash_password, verify_password, create_access_token, load_config
-from datetime import timedelta
-from jose import jwt
 import os
+
+from jose import jwt
+
+from src.utils import (
+    create_access_token,
+    generate_otp,
+    hash_password,
+    load_config,
+    send_otp_email,
+    verify_password,
+)
+
 
 def test_load_config():
     config = load_config()
@@ -40,3 +48,16 @@ def test_create_access_token():
     assert decoded["sub"] == "testuser"
     assert "exp" in decoded
     assert "iat" in decoded
+
+
+def test_generate_otp():
+    otp = generate_otp()
+    assert isinstance(otp, str)
+    assert len(otp) == 6
+    assert otp.isdigit()
+
+
+def test_send_otp_email():
+    otp = generate_otp()
+    email = os.getenv("TEST_EMAIL")
+    assert send_otp_email(email, otp) is True
