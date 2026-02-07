@@ -1,21 +1,26 @@
-import logging, asyncio
-from typing import List
-from datetime import datetime, timezone
-
 import json
+import logging
+from datetime import UTC, datetime
+
 from bson import ObjectId
-from openai import OpenAI
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-from src.utils import load_config
-from src.deps import get_current_user
-from src.pipelines.builder import pipeline
 from src.clients.llm_client import llm_model
-from src.llms.llm_parser import parse_response
 from src.database import conversations_collection, messages_collection
-from src.schemas import ConversationCreate, ConversationUpdate, Conversation, UserInput, UserQueryResponse, Message
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from src.deps import get_current_user
+from src.llms.llm_parser import parse_response
+from src.pipelines.builder import pipeline
+from src.schemas import (
+    Conversation,
+    ConversationCreate,
+    ConversationUpdate,
+    Message,
+    UserInput,
+    UserQueryResponse,
+)
+from src.utils import load_config
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +31,7 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
 def get_current_timestamp() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 def serialize_conversation(conversation, messages=None) -> Conversation:
     return Conversation(
@@ -58,6 +63,7 @@ async def generate_title(user_query: str) -> str:
         return user_query[:50]
 
 
+# ---------------- RUN PIPELINE (NON-STREAMING) ----------------
 @router.post("/run_pipeline", response_model=UserQueryResponse, status_code=status.HTTP_201_CREATED)
 async def execute_user_query(
     user_input: UserInput,
@@ -161,6 +167,7 @@ async def execute_user_query(
     }
 
 
+# ---------------- RUN PIPELINE (STREAMING) ----------------
 @router.post("/run_pipeline/stream", status_code=status.HTTP_200_OK)
 async def execute_user_query_streaming(
     user_input: UserInput,
@@ -330,6 +337,7 @@ async def execute_user_query_streaming(
     )
 
 
+# ---------------- CREATE CONVERSATION ----------------
 @router.post("/conversations", response_model=Conversation, status_code=status.HTTP_201_CREATED)
 async def create_new_conversation(
     conversation: ConversationCreate,
@@ -347,7 +355,8 @@ async def create_new_conversation(
     return serialize_conversation(created_conversation)
 
 
-@router.get("/conversations", response_model=List[Conversation])
+# ---------------- LIST CONVERSATIONS ----------------
+@router.get("/conversations", response_model=list[Conversation])
 async def list_conversations(current_user=Depends(get_current_user)):
     user_id = str(current_user["_id"])
     conversations = []
@@ -359,6 +368,7 @@ async def list_conversations(current_user=Depends(get_current_user)):
     return conversations
 
 
+# ---------------- GET CONVERSATION BY CHAT_ID ----------------
 @router.get("/conversations/{conversation_id}", response_model=Conversation)
 async def get_conversion_by_id(
     conversation_id: str,
@@ -394,6 +404,7 @@ async def get_conversion_by_id(
     return serialize_conversation(conversation, messages=messages)
 
 
+# ---------------- UPDATE CONVERSATION BY CHAT_ID----------------
 @router.put("/conversations/{conversation_id}", response_model=Conversation)
 async def update_exiting_conversion(
     conversation_id: str,
@@ -423,6 +434,7 @@ async def update_exiting_conversion(
     return serialize_conversation(updated_conversation)
 
 
+# ---------------- DELETE CONVERSATION BY CHAT_ID ----------------
 @router.delete("/conversations/{conversation_id}", status_code=status.HTTP_200_OK)
 async def delete_conversion_by_id(
     conversation_id: str,
@@ -446,6 +458,29 @@ async def delete_conversion_by_id(
     return {"message": "Conversation and associated messages deleted successfully"}
 
 
+# ---------------- DELETE ALL CONVERSATIONS ----------------
+@router.delete("/conversations", status_code=status.HTTP_200_OK)
+async def delete_all_conversations(current_user=Depends(get_current_user)):
+    user_id = str(current_user["_id"])
+
+    # 1. Find all conversations for this user to get their IDs
+    cursor = conversations_collection.find({"user_id": user_id}, {"_id": 1})
+    conversation_ids = [doc["_id"] async for doc in cursor]
+    
+    # 2. Convert ObjectIds to strings if stored as strings in messages
+    chat_ids_str = [str(cid) for cid in conversation_ids]
+
+    if chat_ids_str:
+        # 3. Delete all messages for these conversations
+        await messages_collection.delete_many({"chat_id": {"$in": chat_ids_str}})
+
+    # 4. Delete all conversations for this user
+    result = await conversations_collection.delete_many({"user_id": user_id})
+
+    return {"message": f"{result.deleted_count} conversations and all associated messages deleted successfully"}
+
+
+# ---------------- RENAME CONVERSATION BY CHAT_ID ----------------
 @router.put("/conversations/{conversation_id}/rename", response_model=Conversation, status_code=status.HTTP_200_OK)
 async def rename_conversation_title(
     conversation_id: str,
