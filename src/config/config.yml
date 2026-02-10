@@ -46,7 +46,7 @@ Logging:
 
 # Services Configuration
 Services:
-    SUPPORTED_SERVICES: ["chat", "web_search", "thinking"]
+    SUPPORTED_SERVICES: ["chat", "web_search", "thinking", "image_search", "news_search"]
     SUPPORTED_MODEL_TYPE: ["instruct", "chat", "reasoning"]
     SUPPORTED_LLM_PROVIDER: ["ollama", "vllm", "aws_bedrock", "groq", "nvidia", "openai", "llamacpp", "google", "huggingface"]
 

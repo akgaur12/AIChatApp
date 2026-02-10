@@ -1,16 +1,21 @@
 # Standard library
+import logging
 import os
 import random
 import smtplib
 import string
 from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 # Third-party
 import bcrypt
 import yaml
 from dotenv import load_dotenv
 from jose import jwt
+
+# Logger
+logger = logging.getLogger(__name__)
 
 
 # Load configuration from YAML file function
@@ -94,3 +99,42 @@ def send_otp_email(to_email: str, otp: str) -> bool:
     except Exception as e:
         print(f"Error sending email: {e}")
         return False
+
+
+# Generate Chat Title
+async def generate_chat_title(user_query: str, llm_model, parse_response) -> str:
+    """
+    Generates a short, descriptive title for a conversation based on the initial query.
+    Uses dependency injection for llm_model and parse_response to avoid circular imports.
+    """
+    try:
+        # Improved prompt for more concise and relevant titles
+        prompt = (
+            "You are a helpful assistant. Generate a short, 3-5 word title for a conversation "
+            "that starts with the following user query. The title should be descriptive but concise. "
+            "Do not use quotes, periods, or prefixes like 'Title:'."
+        )
+        
+        response = await llm_model.ainvoke([
+                SystemMessage(content=prompt),
+                HumanMessage(content=user_query)
+            ]
+        )
+      
+        # Parse and clean the title
+        parsed = parse_response(response)
+        
+        # Safely extract content regardless of whether it's an AIMessage or raw string
+        title = getattr(parsed, "content", str(parsed)).strip()
+        
+        # Remove surrounding quotes if the LLM included them
+        if title.startswith('"') and title.endswith('"'):
+            title = title[1:-1]
+        elif title.startswith("'") and title.endswith("'"):
+            title = title[1:-1]
+            
+        return title or user_query[:30]
+    except Exception as e:
+        logger.error(f"Error generating title: {e}", exc_info=True)
+        # Fallback to a truncated version of the query
+        return user_query[:30]

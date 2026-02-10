@@ -7,8 +7,12 @@ Unit Tests: Test the smallest pieces of your code in isolation.
 """
 
 import os
+import asyncio
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from jose import jwt
+from langchain_core.messages import AIMessage
 
 from src.utils import (
     create_access_token,
@@ -17,6 +21,7 @@ from src.utils import (
     load_config,
     send_otp_email,
     verify_password,
+    generate_chat_title
 )
 
 
@@ -61,3 +66,40 @@ def test_send_otp_email():
     otp = generate_otp()
     email = os.getenv("TEST_EMAIL")
     assert send_otp_email(email, otp) is True
+
+
+@pytest.mark.asyncio
+async def test_generate_chat_title():
+    # Mock llm_model
+    llm_model = MagicMock()
+    llm_model.ainvoke = AsyncMock()
+    
+    # Mock parse_response
+    parse_response = MagicMock()
+    
+    # Test case 1: Title with double quotes
+    llm_model.ainvoke.return_value = "dummy"
+    parse_response.return_value = AIMessage(content='"A Great Title"')
+    
+    title = await generate_chat_title("Some query", llm_model, parse_response)
+    print(f"Test 1 (Double Quotes): {title}")
+    assert title == "A Great Title"
+    
+    # Test case 2: Title with single quotes
+    parse_response.return_value = AIMessage(content="'Another Title'")
+    title = await generate_chat_title("Some query", llm_model, parse_response)
+    print(f"Test 2 (Single Quotes): {title}")
+    assert title == "Another Title"
+    
+    # Test case 3: Title with no quotes
+    parse_response.return_value = AIMessage(content="Simple Title")
+    title = await generate_chat_title("Some query", llm_model, parse_response)
+    print(f"Test 3 (No Quotes): {title}")
+    assert title == "Simple Title"
+
+    # Test case 4: Exception handling
+    llm_model.ainvoke.side_effect = Exception("error")
+    title = await generate_chat_title("Very long user query that should be truncated", llm_model, parse_response)
+    print(f"Test 4 (Error Case): {title}")
+    assert title == "Very long user query that shou"
+

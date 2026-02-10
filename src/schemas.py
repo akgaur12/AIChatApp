@@ -3,7 +3,8 @@ This file contains all the Pydantic models used in the application.
 BaseModel: A strict gatekeeper at the API door. BaseModel ensures your app only works with valid, typed, trusted data.
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Optional
 
 class UserCreate(BaseModel):
     name: str = Field(min_length=1, max_length=20, default="New User") 
@@ -49,6 +50,14 @@ class Message(BaseModel):
     created_at: str
     seq: int | None = None
 
+# class ConversationBase(BaseModel):
+#     title: Optional[str] = Field(
+#         default="New Chat",
+#         min_length=1,
+#         max_length=60,
+#         description="New conversation title (1-60 characters)"
+#     )
+
 class ConversationBase(BaseModel):
     title: str = Field(
         default="New Chat",
@@ -56,6 +65,13 @@ class ConversationBase(BaseModel):
         max_length=60,
         description="New conversation title (1-60 characters)"
     )
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def replace_none_with_default(cls, v):
+        if v is None:
+            return "New Chat"
+        return v
 
 class ConversationCreate(ConversationBase):
     pass

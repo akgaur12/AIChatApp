@@ -20,7 +20,7 @@ from src.schemas import (
     UserInput,
     UserQueryResponse,
 )
-from src.utils import load_config
+from src.utils import load_config, generate_chat_title
 
 
 logger = logging.getLogger(__name__)
@@ -43,24 +43,6 @@ def serialize_conversation(conversation, messages=None) -> Conversation:
         created_at=conversation.get("created_at"),
         updated_at=conversation.get("updated_at"),
     )
-
-async def generate_title(user_query: str) -> str:
-    try:        
-        response = await llm_model.ainvoke([
-                SystemMessage(content="You are a helpful assistant. Generate a short, 3-5 word title for a conversation that starts with the following user query. Do not use quotes."),
-                HumanMessage(content=user_query)
-            ]
-        )
-      
-        # Remove quotes if present
-        parsed = parse_response(response)
-        title = parsed.content
-        if title.startswith('"') and title.endswith('"'):
-            title = title[1:-1]
-        return title
-    except Exception as e:
-        logger.error(f"Error generating title: {e}", exc_info=True)
-        return user_query[:50]
 
 
 # ---------------- RUN PIPELINE (NON-STREAMING) ----------------
@@ -122,7 +104,7 @@ async def execute_user_query(
     
     if not conversation_id:
         # Create new conversation
-        title = await generate_title(user_prompt)
+        title = await generate_chat_title(user_prompt, llm_model, parse_response)
         new_conversation = {
             "user_id": user_id,
             "title": title,
@@ -279,7 +261,7 @@ async def execute_user_query_streaming(
         try:
             if not conversation_id:
                 # Create new conversation
-                title = await generate_title(user_prompt)
+                title = await generate_chat_title(user_prompt, llm_model, parse_response)
                 new_conversation = {
                     "user_id": user_id,
                     "title": title,
