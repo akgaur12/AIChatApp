@@ -1,7 +1,6 @@
 import tomllib
 from pathlib import Path
 
-
 PYPROJECT_FILE = Path("pyproject.toml")
 OUTPUT_FILE = Path("artifacts/requirements.txt")
 

@@ -1,6 +1,5 @@
 from src.pipelines.builder import pipeline
 
-
 PIPELINES = [
     ("main", pipeline, "main_pipeline"),
 ]

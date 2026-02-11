@@ -1,7 +1,5 @@
 from langchain_core.prompts import PromptTemplate
 
-
-
 WEB_SEARCH_PROMPT = PromptTemplate.from_template("""
 You are a helpful assistant that can answer questions based on the following web content:
 {web_content}

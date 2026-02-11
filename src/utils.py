@@ -6,13 +6,13 @@ import smtplib
 import string
 from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 # Third-party
 import bcrypt
 import yaml
 from dotenv import load_dotenv
 from jose import jwt
+from langchain_core.messages import HumanMessage, SystemMessage
 
 # Logger
 logger = logging.getLogger(__name__)
@@ -128,9 +128,7 @@ async def generate_chat_title(user_query: str, llm_model, parse_response) -> str
         title = getattr(parsed, "content", str(parsed)).strip()
         
         # Remove surrounding quotes if the LLM included them
-        if title.startswith('"') and title.endswith('"'):
-            title = title[1:-1]
-        elif title.startswith("'") and title.endswith("'"):
+        if title.startswith('"') and title.endswith('"') or title.startswith("'") and title.endswith("'"):
             title = title[1:-1]
             
         return title or user_query[:30]

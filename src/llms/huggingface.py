@@ -1,5 +1,7 @@
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+
 from .base import BaseLLMProvider
+
 
 class HuggingFaceProvider(BaseLLMProvider):
     def create_model(self, config: dict, **kwargs):

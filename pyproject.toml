@@ -36,6 +36,10 @@ dependencies = [
     "pytest-asyncio>=1.3.0",
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+]
 
 [project.scripts]
 start = "main:main"
@@ -46,3 +50,25 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
+
+[tool.ruff]
+line-length = 200
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # style errors
+    "F",   # real bugs
+    "B",   # bugbear
+    "I",   # imports
+    "UP",  # modern python
+    "C4",  # comprehensions
+    "SIM", # simplify
+]
+fixable = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+

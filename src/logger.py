@@ -1,5 +1,8 @@
-import os, sys, logging
+import logging
+import os
+import sys
 from logging.handlers import RotatingFileHandler
+
 from src.utils import cfg
 
 # Configuration extraction

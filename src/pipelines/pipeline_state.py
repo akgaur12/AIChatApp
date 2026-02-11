@@ -1,13 +1,13 @@
-from typing import TypedDict, Annotated, Literal, Optional, List, Dict, Any
+from typing import Any, TypedDict
 
 
 class PipelineState(TypedDict):
     service_name: str
     user_input: str
-    llm_messages: List[Dict[str, Any]]
-    llm_response: Optional[str] = None
-    input_tokens: Optional[int] = 0
-    output_tokens: Optional[int] = 0
-    response_time: Optional[float] = 0.0
+    llm_messages: list[dict[str, Any]]
+    llm_response: str | None = None
+    input_tokens: int | None = 0
+    output_tokens: int | None = 0
+    response_time: float | None = 0.0
 
     

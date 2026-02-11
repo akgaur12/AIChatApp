@@ -3,6 +3,7 @@ This file contains all the Pydantic models used in the application.
 BaseModel: A strict gatekeeper at the API door. BaseModel ensures your app only works with valid, typed, trusted data.
 """
 
+
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 

@@ -1,7 +1,10 @@
-import os, logging
+import logging
+import os
+
 from dotenv import load_dotenv
-from src.utils import load_config
+
 from src.llms import LLMFactory
+from src.utils import load_config
 
 load_dotenv()
 cfg = load_config()

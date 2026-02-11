@@ -1,5 +1,7 @@
 from langchain_ollama import ChatOllama
+
 from .base import BaseLLMProvider
+
 
 class OllamaProvider(BaseLLMProvider):
     def create_model(self, config: dict, **kwargs):

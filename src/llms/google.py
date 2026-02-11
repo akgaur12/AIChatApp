@@ -1,5 +1,7 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
+
 from .base import BaseLLMProvider
+
 
 class GoogleProvider(BaseLLMProvider):
     def create_model(self, config: dict, **kwargs):

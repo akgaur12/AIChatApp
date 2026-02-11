@@ -1,5 +1,7 @@
 from langchain_openai import ChatOpenAI
+
 from .base import BaseLLMProvider
+
 
 class VLLMProvider(BaseLLMProvider):
     def create_model(self, config: dict, **kwargs):

@@ -1,8 +1,9 @@
-import pytest
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from bson import ObjectId
-from datetime import datetime, timezone
-from src.schemas import Message
+
 
 # Mock Auth Dependency
 async def mock_get_current_user():
@@ -16,8 +17,8 @@ def mock_user_id():
     return "507f1f77bcf86cd799439011"
 
 def test_create_conversation(test_client, mock_user_id):
-    from src.api_router.chat_router import get_current_user
     from main import app
+    from src.api_router.chat_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
     
     with patch("src.api_router.chat_router.conversations_collection") as mock_collection:
@@ -31,8 +32,8 @@ def test_create_conversation(test_client, mock_user_id):
             "user_id": mock_user_id,
             "title": "New Chat",
             "message_count": 0,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(UTC).isoformat(),
+            "updated_at": datetime.now(UTC).isoformat()
         })
         
         response = test_client.post("/chat/conversations", json={"title": "New Chat"})
@@ -44,8 +45,8 @@ def test_create_conversation(test_client, mock_user_id):
     app.dependency_overrides = {}
 
 def test_list_conversations(test_client, mock_user_id):
-    from src.api_router.chat_router import get_current_user
     from main import app
+    from src.api_router.chat_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
 
     with patch("src.api_router.chat_router.conversations_collection") as mock_collection:
@@ -82,8 +83,8 @@ def test_list_conversations(test_client, mock_user_id):
     app.dependency_overrides = {}
 
 def test_execute_user_query_new_conversation(test_client, mock_user_id):
-    from src.api_router.chat_router import get_current_user
     from main import app
+    from src.api_router.chat_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
     
     # Mock LLM and Database
@@ -121,8 +122,8 @@ def test_execute_user_query_new_conversation(test_client, mock_user_id):
     app.dependency_overrides = {}
 
 def test_get_conversation_by_id(test_client, mock_user_id):
-    from src.api_router.chat_router import get_current_user
     from main import app
+    from src.api_router.chat_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
     
     chat_id = ObjectId()
@@ -166,8 +167,8 @@ def test_get_conversation_by_id(test_client, mock_user_id):
     app.dependency_overrides = {}
 
 def test_rename_conversation(test_client, mock_user_id):
-    from src.api_router.chat_router import get_current_user
     from main import app
+    from src.api_router.chat_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
 
     chat_id = ObjectId()
@@ -189,8 +190,8 @@ def test_rename_conversation(test_client, mock_user_id):
     app.dependency_overrides = {}
 
 def test_delete_conversation(test_client, mock_user_id):
-    from src.api_router.chat_router import get_current_user
     from main import app
+    from src.api_router.chat_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
 
     chat_id = ObjectId()

@@ -10,9 +10,8 @@ Integration Tests: Test the integration of different components of your code.
     - test_delete_user: Tests if the user is deleted successfully.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from src.schemas import Token
+
 
 # Mock the current user dependency for protected routes
 async def mock_get_current_user():
@@ -87,8 +86,8 @@ def test_login_invalid(test_client):
 
 def test_logout(test_client):
     # Override dependency
-    from src.api_router.user_router import get_current_user
     from main import app
+    from src.api_router.user_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
     
     response = test_client.post("/auth/logout")
@@ -99,8 +98,8 @@ def test_logout(test_client):
     app.dependency_overrides = {}
 
 def test_reset_password(test_client):
-    from src.api_router.user_router import get_current_user, verify_password
     from main import app
+    from src.api_router.user_router import get_current_user
     app.dependency_overrides[get_current_user] = mock_get_current_user
     
     with patch("src.api_router.user_router.users_collection") as mock_collection, \

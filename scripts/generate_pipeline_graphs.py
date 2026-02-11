@@ -1,10 +1,10 @@
 
 import argparse
 from pathlib import Path
-from src.pipelines.builder import pipeline
 
 from langchain_core.runnables.graph import MermaidDrawMethod
 
+from src.pipelines.builder import pipeline
 
 FIG_DIR = Path("artifacts")
 FIG_DIR.mkdir(exist_ok=True)
@@ -52,8 +52,8 @@ if __name__ == "__main__":
     main(args)
 
 
-    # python generate_pipeline_graphs.py --app main
-    # python generate_pipeline_graphs.py --app both
+    # python scripts/generate_pipeline_graphs.py --app main
+    # python scripts/generate_pipeline_graphs.py --app both
 
 
 

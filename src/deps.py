@@ -8,10 +8,10 @@ This module contains shared dependencies for FastAPI routes.
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 
 from src.database import users_collection
-from src.utils import JWT_SECRET_KEY, ALGORITHM
+from src.utils import ALGORITHM, JWT_SECRET_KEY
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 

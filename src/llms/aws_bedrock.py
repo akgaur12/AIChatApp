@@ -1,5 +1,7 @@
 from langchain_aws import ChatBedrockConverse
+
 from .base import BaseLLMProvider
+
 
 class AWSBedrockProvider(BaseLLMProvider):
     def create_model(self, config: dict, **kwargs):

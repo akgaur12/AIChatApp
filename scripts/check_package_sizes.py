@@ -1,13 +1,12 @@
-import importlib.util
-import os
-import sys
-import json
 import argparse
+import importlib.metadata as md
+import importlib.util
+import json
+import os
 import pkgutil
 from pathlib import Path
-import importlib.metadata as md
-from tqdm import tqdm
 
+from tqdm import tqdm
 
 ARTIFACTS_DIR = Path("artifacts") 
 ARTIFACTS_DIR.mkdir(exist_ok=True)
@@ -112,7 +111,7 @@ def main():
         for r in results:
             f.write(f"{r['package']:25s} {r['version']:15s} {r['size_mb']:10.2f}\n")
 
-        f.write("\nTOTAL SIZE: {:.2f} MB\n".format(total_size))
+        f.write(f"\nTOTAL SIZE: {total_size:.2f} MB\n")
 
     print(f"\nText report saved → {OUTPUT_TEXT_FILE}")
 

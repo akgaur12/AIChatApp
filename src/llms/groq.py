@@ -1,5 +1,7 @@
 from langchain_groq import ChatGroq
+
 from .base import BaseLLMProvider
+
 
 class GroqProvider(BaseLLMProvider):
     def create_model(self, config: dict, **kwargs):

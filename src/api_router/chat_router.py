@@ -20,8 +20,7 @@ from src.schemas import (
     UserInput,
     UserQueryResponse,
 )
-from src.utils import load_config, generate_chat_title
-
+from src.utils import generate_chat_title, load_config
 
 logger = logging.getLogger(__name__)
 cfg = load_config(filename="config.yml")

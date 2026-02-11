@@ -1,5 +1,7 @@
-from typing import Any, Optional, Dict
+from typing import Any
+
 from langchain_core.messages import AIMessage
+
 from src.utils import load_config
 
 cfg = load_config()
@@ -9,8 +11,8 @@ default_inference_type = llm_cfg.get("Provider", "").lower()
 
 def parse_response(llm_response: Any, inference_type: str = default_inference_type) -> AIMessage:
     content: str = ""
-    reasoning_content: Optional[str] = None
-    metadata: Dict[str, Any] = {}
+    reasoning_content: str | None = None
+    metadata: dict[str, Any] = {}
 
     if inference_type == "openai":
         content = llm_response.choices[0].message.content

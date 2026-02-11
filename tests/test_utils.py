@@ -7,7 +7,6 @@ Unit Tests: Test the smallest pieces of your code in isolation.
 """
 
 import os
-import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

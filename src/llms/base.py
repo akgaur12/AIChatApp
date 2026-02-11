@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class BaseLLMProvider(ABC):
     """Abstract base class for LLM providers."""
     

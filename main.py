@@ -1,8 +1,11 @@
-import os, sys, logging, subprocess
-from logging.handlers import RotatingFileHandler
-from fastapi import FastAPI, Request, status, HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse
+import logging
+import subprocess
+import sys
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+
 from src.logger import setup_logging
 
 # Initialize logging immediately
@@ -11,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 from src.api_router import chat_router, user_router
-from src.utils import load_config
 from src.lifespan import lifespan
+from src.utils import load_config
 
 cfg = load_config(filename="config.yml")
 
