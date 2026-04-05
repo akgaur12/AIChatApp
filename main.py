@@ -27,11 +27,6 @@ TIMEOUT = cfg["FastAPI"]["TIMEOUT"]
 GRACEFUL_TIMEOUT = cfg["FastAPI"]["GRACEFUL_TIMEOUT"]
 
 
-# Set log levels for specific libraries to WARNING to reduce verbosity
-for logger_name in cfg["Logging"]["NOISY_LOGGERS"]:
-    logging.getLogger(logger_name).setLevel(logging.WARNING)
-
-
 # Initialize FastAPI application
 app = FastAPI(title="AIChatApp", version="1.0.0", lifespan=lifespan)
 
