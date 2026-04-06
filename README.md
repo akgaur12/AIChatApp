@@ -208,6 +208,7 @@ AIChatApp/
 │   |   └── user_router.py      # User API Router
 │   ├── config/                 # Configuration files
 │   |   └── config.yml          # Configuration file
+|   |   └── logging.yaml        # Logging Config File
 │   ├── pipelines/              # AI/LLM Processing Pipelines
 |   |   ├── builder.py          # Pipeline builder
 |   |   ├── nodes.py            # Pipeline nodes
