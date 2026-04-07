@@ -48,7 +48,7 @@ Logging:
 Services:
     SUPPORTED_SERVICES: ["chat", "web_search", "thinking", "image_search", "news_search"]
     SUPPORTED_MODEL_TYPE: ["instruct", "chat", "reasoning"]
-    SUPPORTED_LLM_PROVIDER: ["ollama", "vllm", "aws_bedrock", "groq", "nvidia", "openai", "llamacpp", "google", "huggingface"]
+    SUPPORTED_LLM_PROVIDER: ["ollama", "vllm", "aws_bedrock", "groq", "nvidia", "openai", "llamacpp", "google", "huggingface", "open_router"]
 
 
 # LLM Configuration
@@ -129,4 +129,16 @@ LLM:
         REPEAT_PENALTY: 1.5    # Reduces repeated words; higher = less repetition, 1.0 = no penalty, 1.2 = 20% penalty
         TOP_P: 0.5             # Controls creativity; lower = more focused responses (controls how many choices are allowed)
         VERBOSE: True          # Enable verbose output
+
+    open_router:
+        BASE_URL: "https://openrouter.ai/api/v1"
+        MODEL: "openai/gpt-oss-20b:free" 
+        MAX_TOKENS: 4096
+        TEMPERATURE: 0.1
+        TOP_P: 1.0
+        FREQUENCY_PENALTY: 0.0
+        PRESENCE_PENALTY: 0.0
+        REASONING_EFFORT: "low"
+        MODEL_TYPE: "reasoning"
+        MAX_RETRIES: 2
 

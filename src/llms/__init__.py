@@ -9,6 +9,7 @@ from .llm_parser import parse_response
 from .nvidia import NVIDIAProvider
 from .ollama import OllamaProvider
 from .vllm import VLLMProvider
+from .open_router import OpenRouterProvider
 
 __all__ = [
     "OllamaProvider",
@@ -21,5 +22,6 @@ __all__ = [
     "LlamaCppProvider",
     "LLMFactory",
     "BaseLLMProvider",
-    "parse_response"
+    "parse_response",
+    "OpenRouterProvider"
 ]

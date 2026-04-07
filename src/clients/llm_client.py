@@ -29,6 +29,7 @@ def get_llm_model():
                    or os.getenv("NVIDIA_API_KEY")
                    or os.getenv("GOOGLE_API_KEY")
                    or os.getenv("GROQ_API_KEY")
+                   or os.getenv("OPENROUTER_API_KEY")
     }
 
     return provider.create_model(llm_cfg.get(inference_type, {}), **kwargs)

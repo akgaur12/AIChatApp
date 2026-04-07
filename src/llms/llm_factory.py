@@ -6,6 +6,7 @@ from .llamacpp import LlamaCppProvider
 from .nvidia import NVIDIAProvider
 from .ollama import OllamaProvider
 from .vllm import VLLMProvider
+from .open_router import OpenRouterProvider
 
 
 class LLMFactory:
@@ -20,6 +21,7 @@ class LLMFactory:
         "google": GoogleProvider,
         "huggingface": HuggingFaceProvider,
         "llamacpp": LlamaCppProvider,
+        "open_router": OpenRouterProvider,
     }
 
     @classmethod
