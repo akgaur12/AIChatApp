@@ -1,0 +1,56 @@
+classDiagram
+    class BaseLLMProvider {
+        <<abstract>>
+        +create_model(config dict, kwargs) LangChain_LLM
+    }
+
+    class LLMFactory {
+        +_providers dict
+        +get_provider(provider_type str) BaseLLMProvider
+    }
+
+    class OllamaProvider {
+        +create_model(config, kwargs)
+    }
+    class VLLMProvider {
+        +create_model(config, kwargs)
+    }
+    class GroqProvider {
+        +create_model(config, kwargs)
+    }
+    class AWSBedrockProvider {
+        +create_model(config, kwargs)
+    }
+    class GoogleProvider {
+        +create_model(config, kwargs)
+    }
+    class NVIDIAProvider {
+        +create_model(config, kwargs)
+    }
+    class HuggingFaceProvider {
+        +create_model(config, kwargs)
+    }
+    class LlamaCppProvider {
+        +create_model(config, kwargs)
+    }
+    class OpenRouterProvider {
+        +create_model(config, kwargs)
+    }
+
+    class LLMClient {
+        +get_llm_model() LangChain_LLM
+        +llm_model singleton
+    }
+
+    BaseLLMProvider <|-- OllamaProvider
+    BaseLLMProvider <|-- VLLMProvider
+    BaseLLMProvider <|-- GroqProvider
+    BaseLLMProvider <|-- AWSBedrockProvider
+    BaseLLMProvider <|-- GoogleProvider
+    BaseLLMProvider <|-- NVIDIAProvider
+    BaseLLMProvider <|-- HuggingFaceProvider
+    BaseLLMProvider <|-- LlamaCppProvider
+    BaseLLMProvider <|-- OpenRouterProvider
+
+    LLMFactory ..> BaseLLMProvider : instantiates
+    LLMClient --> LLMFactory : calls get_provider()

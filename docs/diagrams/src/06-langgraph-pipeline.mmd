@@ -1,0 +1,41 @@
+flowchart TD
+    START([START]) --> SN["select_tool_node\n(nodes.py:43)"]
+
+    SN --> Q1{already routed to\nweb/image/news?}
+    Q1 -->|yes| ROUTE{route by\nservice_name}
+    Q1 -->|no| Q2{SELF_PATTERN\nmatch in user_input?}
+    Q2 -->|yes| SET_SELF[set service_name = self]
+    Q2 -->|no| Q3{SEARCH_PATTERN\nkeyword match?}
+    Q3 -->|yes| SET_WEB[set service_name = web_search]
+    Q3 -->|no| KEEP[keep original service_name]
+    SET_SELF --> ROUTE
+    SET_WEB --> ROUTE
+    KEEP --> ROUTE
+
+    ROUTE -->|self| SELFN["self_node_\n(nodes.py:168)"]
+    ROUTE -->|"chat, thinking"| CHAT["chat_node\n(nodes.py:63)"]
+    ROUTE -->|"web_search,\nimage_search,\nnews_search"| SEARCH["search_node\n(nodes.py:85)"]
+
+    SELFN --> LLM_S["ainvoke SELF_PROMPT\nvia llm_model"]
+    CHAT --> LLM_C["ainvoke llm_messages\n(with chat history)"]
+    SEARCH --> Q4{service_name?}
+
+    Q4 -->|web_search| WEB["DDGS().text()\nmax_results=5"]
+    Q4 -->|image_search| IMG["DDGS().images()\nmax_results=4"]
+    Q4 -->|news_search| NEWS["DDGS().news()\nmax_results=5"]
+
+    WEB --> FMT_W["format WEB_SEARCH_PROMPT\n+ links_section"]
+    IMG --> FMT_I["format IMAGE_SEARCH_PROMPT\n+ image URLs"]
+    NEWS --> FMT_N["format NEWS_SEARCH_PROMPT\n+ news URLs"]
+
+    FMT_W --> LLM_SR["ainvoke formatted prompt\nvia llm_model"]
+    FMT_I --> LLM_SR
+    FMT_N --> LLM_SR
+
+    LLM_S --> PARSE_S["parse_response()\nrecord response_time, tokens"]
+    LLM_C --> PARSE_C["parse_response()\nrecord response_time, tokens"]
+    LLM_SR --> PARSE_SR["parse_response()\nrecord response_time, tokens\nappend links_section"]
+
+    PARSE_S --> END1([END])
+    PARSE_C --> END2([END])
+    PARSE_SR --> END3([END])

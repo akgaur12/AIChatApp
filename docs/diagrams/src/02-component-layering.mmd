@@ -1,0 +1,49 @@
+graph TB
+    subgraph Presentation["Presentation Layer — API Routes"]
+        CR["chat_router.py\nCRUD for conversations + pipeline"]
+        UR["user_router.py\nsignup / login / password reset"]
+    end
+
+    subgraph Application["Application Layer — Business Logic"]
+        Deps["deps.py\nget_current_user + RoleChecker"]
+        Utils["utils.py\nJWT tokens, bcrypt, OTP, SMTP"]
+        Nodes["pipelines/nodes.py\nselect_tool, chat, search, self"]
+        Builder["pipelines/builder.py\nLangGraph StateGraph"]
+        State["pipelines/pipeline_state.py\nPipelineState TypedDict"]
+        Prompts["prompts/prompts.py\nWEB / IMAGE / NEWS / SELF templates"]
+    end
+
+    subgraph Infrastructure["Infrastructure Layer"]
+        DB["database.py\nMotor AsyncIOMotorClient"]
+        LLMClient["clients/llm_client.py\nget_llm_model() singleton"]
+        LLMFactory["llms/llm_factory.py\nLLMFactory.get_provider()"]
+        Providers["llms/*.py\n9 provider implementations"]
+        Parser["llms/llm_parser.py\nparse_response()"]
+    end
+
+    subgraph Config["Configuration"]
+        YML["config/config.yml\nserver / DB / LLM / email settings"]
+        ENV[".env\nJWT secret / API keys / credentials"]
+    end
+
+    CR --> Deps
+    CR --> Builder
+    CR --> DB
+    CR --> Utils
+    UR --> Deps
+    UR --> DB
+    UR --> Utils
+    Deps --> DB
+    Deps --> Utils
+    Builder --> Nodes
+    Nodes --> State
+    Nodes --> LLMClient
+    Nodes --> Prompts
+    Nodes --> Parser
+    LLMClient --> LLMFactory
+    LLMFactory --> Providers
+    LLMClient --> YML
+    LLMClient --> ENV
+    DB --> YML
+    Utils --> ENV
+    Utils --> YML

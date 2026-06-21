@@ -1,0 +1,60 @@
+sequenceDiagram
+    participant C as Client
+    participant CR as chat_router
+    participant JWT as deps.get_current_user
+    participant DB as MongoDB
+    participant P as LangGraph Pipeline
+    participant N as Pipeline Nodes
+    participant LLM as LLM Provider
+    participant DDGS as DuckDuckGo
+
+    C->>CR: POST /chat/run_pipeline {user_query, service_name, conversation_id}
+    CR->>JWT: validate Bearer token
+    JWT-->>CR: user document
+
+    alt conversation_id provided
+        CR->>DB: find conversation in chats
+        DB-->>CR: conversation document
+        CR->>DB: find last 5 messages from chat_messages (sorted desc, limit 5)
+        DB-->>CR: message turns
+        CR->>CR: build llm_messages list (HumanMsg + AIMsg pairs)
+    end
+
+    CR->>CR: append current HumanMessage to llm_messages
+    CR->>P: ainvoke({service_name, user_input, llm_messages})
+    P->>N: select_tool_node
+
+    alt already routed or SELF_PATTERN match
+        N->>N: set service = self or keep service
+    else SEARCH_PATTERN keyword match
+        N->>N: set service = web_search
+    end
+
+    alt service = web_search or image_search or news_search
+        N->>DDGS: text/images/news search (max 5 results)
+        DDGS-->>N: search results with body and links
+        N->>N: format prompt from WEB/IMAGE/NEWS template
+        N->>LLM: ainvoke([HumanMessage(formatted_prompt)])
+    else service = self
+        N->>LLM: ainvoke([HumanMessage(SELF_PROMPT)])
+    else service = chat or thinking
+        N->>LLM: ainvoke(llm_messages with history)
+    end
+
+    LLM-->>N: AIMessage (content + response_metadata)
+    N->>N: parse_response, measure response_time
+    N-->>P: updated PipelineState
+    P-->>CR: {llm_response, input_tokens, output_tokens, response_time}
+
+    alt new conversation (no conversation_id)
+        CR->>LLM: generate_chat_title (short 3-5 word title)
+        LLM-->>CR: title string
+        CR->>DB: insert_one into chats collection
+        DB-->>CR: new conversation_id
+    else existing conversation
+        CR->>DB: find_one_and_update chats (inc message_count, set updated_at)
+        DB-->>CR: updated conversation
+    end
+
+    CR->>DB: insert_one turn into chat_messages (user, assistant, tokens, seq)
+    CR-->>C: 201 {conversation_id, message}

@@ -1,0 +1,45 @@
+graph TB
+    Client["Client (Browser / Mobile App)"]
+
+    subgraph AIChatApp["AIChatApp — FastAPI Backend"]
+        direction TB
+        Entry["main.py\nEntry Point"]
+        CORS["CORS Middleware"]
+        AuthRouter["user_router.py\nPREFIX: /auth"]
+        ChatRouter["chat_router.py\nPREFIX: /chat"]
+        Deps["deps.py\nJWT Auth Dependency"]
+        Utils["utils.py\nJWT / OTP / Email / bcrypt"]
+        Pipeline["LangGraph Pipeline\npipelines/builder.py"]
+        LLMClient["clients/llm_client.py\nLLMFactory singleton"]
+    end
+
+    subgraph LLMProviders["LLM Providers (configured via config.yml)"]
+        Ollama["Ollama\n(local)"]
+        VLLM["vLLM\n(self-hosted)"]
+        Groq["Groq API"]
+        Bedrock["AWS Bedrock"]
+        Google["Google Gemini"]
+        NVIDIA["NVIDIA NIM"]
+        HF["HuggingFace Hub"]
+        LlamaCpp["llama.cpp\n(local GGUF)"]
+        OR["OpenRouter"]
+    end
+
+    MongoDB[("MongoDB\nai_chat_app\nusers / chats / chat_messages")]
+    DDGS["DuckDuckGo Search\n(ddgs library)"]
+    SMTP["Gmail SMTP\nOTP emails"]
+
+    Client -- "HTTP REST / SSE" --> CORS
+    CORS --> AuthRouter
+    CORS --> ChatRouter
+    AuthRouter --> Deps
+    ChatRouter --> Deps
+    AuthRouter --> Utils
+    Deps --> MongoDB
+    AuthRouter --> MongoDB
+    ChatRouter --> MongoDB
+    ChatRouter --> Pipeline
+    Pipeline --> LLMClient
+    Pipeline --> DDGS
+    LLMClient --> LLMProviders
+    Utils --> SMTP

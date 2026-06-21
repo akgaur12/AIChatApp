@@ -1,0 +1,47 @@
+graph TB
+    subgraph Client["Client Tier"]
+        Browser["Browser / Frontend App"]
+    end
+
+    subgraph DevMode["Development Mode — python main.py dev"]
+        UV["Uvicorn\n--reload --host 0.0.0.0 --port 45001"]
+        APP_DEV["FastAPI app\nSingle process"]
+        UV --> APP_DEV
+    end
+
+    subgraph ProdMode["Production Mode — python main.py"]
+        GUN["Gunicorn\nProcess Manager\n-w 2 -k UvicornWorker"]
+        W1["UvicornWorker 1\nFastAPI app"]
+        W2["UvicornWorker 2\nFastAPI app"]
+        GUN --> W1
+        GUN --> W2
+    end
+
+    subgraph DataTier["Data Tier"]
+        MONGO[("MongoDB\nlocalhost:27017\nDB: ai_chat_app")]
+    end
+
+    subgraph ExternalServices["External Services"]
+        LLM_API["LLM APIs\nGroq / AWS Bedrock / Google\nNVIDIA / HuggingFace / OpenRouter"]
+        LOCAL_LLM["Local LLM\nOllama (localhost:11434)\nvLLM / llama.cpp"]
+        DDGS_SVC["DuckDuckGo Search\nPublic API (no key)"]
+        SMTP_SVC["Gmail SMTP\nsmtp.gmail.com:587"]
+    end
+
+    Browser -- "HTTP / SSE" --> DevMode
+    Browser -- "HTTP / SSE" --> ProdMode
+
+    APP_DEV --> MONGO
+    APP_DEV --> LLM_API
+    APP_DEV --> LOCAL_LLM
+    APP_DEV --> DDGS_SVC
+    APP_DEV --> SMTP_SVC
+
+    W1 --> MONGO
+    W2 --> MONGO
+    W1 --> LLM_API
+    W2 --> LLM_API
+    W1 --> LOCAL_LLM
+    W2 --> LOCAL_LLM
+    W1 --> DDGS_SVC
+    W2 --> DDGS_SVC

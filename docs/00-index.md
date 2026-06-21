@@ -32,6 +32,7 @@ All content here is derived from the **actual implementation** in this repositor
 | 18 | [Troubleshooting Guide](18-troubleshooting.md) | Common errors and fixes |
 | 19 | [Performance Considerations](19-performance.md) | Async I/O, token tracking, optimizations |
 | 20 | [Glossary](20-glossary.md) | Key terms and concepts |
+| — | [Architecture Diagrams](architecture-diagrams.md) | Visual system, flow, pipeline, data model, and deployment diagrams (9 PNGs) |
 
 ---
 

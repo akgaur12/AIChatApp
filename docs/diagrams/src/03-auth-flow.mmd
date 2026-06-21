@@ -1,0 +1,48 @@
+sequenceDiagram
+    participant C as Client
+    participant UR as user_router
+    participant U as utils.py
+    participant DB as MongoDB users
+    participant E as Gmail SMTP
+
+    note over C,DB: Signup
+    C->>UR: POST /auth/signup {name, email, password, role}
+    UR->>DB: find_one email
+    DB-->>UR: null (email available)
+    UR->>U: hash_password (bcrypt)
+    U-->>UR: hashed_password
+    UR->>DB: insert_one user document
+    UR-->>C: 201 User created successfully
+
+    note over C,DB: Login
+    C->>UR: POST /auth/login-json {email, password}
+    UR->>DB: find_one email
+    DB-->>UR: user document
+    UR->>U: verify_password (bcrypt.checkpw)
+    U-->>UR: true
+    UR->>U: create_access_token (JWT HS256)
+    U-->>UR: signed JWT token
+    UR-->>C: 200 {access_token, token_type}
+
+    note over C,DB: Authenticated Request
+    C->>UR: Any protected route + Bearer token
+    UR->>UR: deps.get_current_user
+    UR->>UR: jwt.decode(token, JWT_SECRET_KEY)
+    UR->>DB: find_one by email from token payload
+    DB-->>UR: user document
+    UR-->>C: route response
+
+    note over C,E: Forgot Password OTP Flow
+    C->>UR: POST /auth/forget-password {email}
+    UR->>DB: find_one email
+    UR->>U: generate_otp (6 digits, 5 min expiry)
+    UR->>DB: update otp and otp_expiry fields
+    UR->>U: send_otp_email (SMTP starttls)
+    U->>E: send OTP email
+    E-->>C: email delivered
+    C->>UR: POST /auth/verify-otp-reset-password {email, otp, new_password}
+    UR->>DB: find_one email
+    UR->>UR: validate otp and check expiry
+    UR->>U: hash_password (new password)
+    UR->>DB: update hashed_password, unset otp fields
+    UR-->>C: 200 Password reset successfully

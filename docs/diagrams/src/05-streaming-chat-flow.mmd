@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant C as Client
+    participant CR as chat_router
+    participant P as LangGraph Pipeline
+    participant LLM as LLM Provider
+    participant DB as MongoDB
+
+    C->>CR: POST /chat/run_pipeline/stream {user_query, service_name, conversation_id}
+    CR->>CR: validate JWT, load history (same as non-stream)
+    CR-->>C: 200 StreamingResponse (text/event-stream)
+
+    note over C,LLM: SSE streaming loop via pipeline.astream_events()
+
+    loop on_chat_model_stream events
+        P->>LLM: astream tokens
+        LLM-->>P: token chunk
+        P-->>C: data: {"type":"content","content":"token"}
+    end
+
+    P->>LLM: on_chat_model_end (usage_metadata)
+    LLM-->>P: input_tokens, output_tokens
+
+    P->>P: on_chain_end (full state with llm_response)
+    P-->>P: capture full_response from pipeline state
+
+    note over CR,C: Check for extra content not streamed (e.g. link sections)
+    CR->>CR: compare full_response vs streamed_response
+    alt extra content (links section)
+        CR-->>C: data: {"type":"content","content":"...links..."}
+    end
+
+    CR->>DB: generate_chat_title if new conversation
+    CR->>DB: insert_one conversations or update message_count
+    CR->>DB: insert_one chat_messages (full_response, tokens, seq)
+    CR-->>C: data: {"type":"metadata","conversation_id":"..."}
