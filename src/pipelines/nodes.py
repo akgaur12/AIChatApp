@@ -44,6 +44,8 @@ async def select_tool_node(state: PipelineState):
     if state.get("service_name") in {"web_search", "image_search", "news_search"}:
         return state
 
+    # logger.critical(f"test error")
+
     user_input = state["user_input"]
 
     if SELF_PATTERN.search(user_input):

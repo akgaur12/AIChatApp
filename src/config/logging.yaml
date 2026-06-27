@@ -12,6 +12,18 @@ formatters:
     format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     datefmt: "%Y-%m-%d %H:%M:%S"
 
+  # Rich email format — includes full traceback context
+  email_formatter:
+    format: |
+      Time     : %(asctime)s
+      Level    : %(levelname)s
+      Logger   : %(name)s
+      File     : %(filename)s line %(lineno)d
+      Function : %(funcName)s
+      ----------------------------------------
+      %(message)s
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
 # ── Filters ──────────────────────────────────────────────────────────
 filters:
   exact_debug:
@@ -25,6 +37,10 @@ filters:
   exact_warning:
     (): src.logger.ExactLevelFilter
     level: 30
+
+  exact_critical:
+    (): src.logger.ExactLevelFilter
+    level: 50                             # Only CRITICAL — not ERROR
 
 # ── Handlers ─────────────────────────────────────────────────────────
 handlers:
@@ -73,6 +89,24 @@ handlers:
     formatter: standard
     stream: ext://sys.stdout
 
+  # Handler to send ALERT → Email
+  email:
+    class: logging.handlers.SMTPHandler
+    level: CRITICAL
+    formatter: email_formatter
+    filters: [exact_critical]          # Remove this line to also catch ERROR
+    mailhost:
+      - smtp.gmail.com                 # SMTP server host
+      - 587                            # TLS port (use 465 for SSL)
+    fromaddr: [FROM_EMAIL_ADDRESS]
+    toaddrs:
+      - [TO_EMAIL_ADDRESS]
+    subject: "[CRITICAL] %(name)s — %(message)s"
+    credentials:
+      - [SMTP_USER]                    # SMTP username
+      - [SMTP_PASSWORD]                # Use env var — see note below
+    secure: []                         # Empty list = use STARTTLS on port 587
+
 # ── Noisy third-party loggers ─────────────────────────────────────────
 loggers:
   httpx:                                        *noisy
@@ -88,4 +122,4 @@ loggers:
 # ── Root logger ───────────────────────────────────────────────────────
 root:
   level: INFO
-  handlers: [debug_file, info_file, warning_file, error_file, console]
+  handlers: [debug_file, info_file, warning_file, error_file, console, email]

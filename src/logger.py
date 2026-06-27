@@ -22,4 +22,13 @@ def setup_logging(config_path: str = "src/config/logging.yaml"):
     with open(config_path) as f:
         config = yaml.safe_load(f)
 
+    # Inject SMTP credentials from environment at runtime
+    config["handlers"]["email"]["credentials"] = [
+        os.getenv("SENDER_EMAIL"),
+        os.getenv("SENDER_PASSWORD"),
+    ]
+
+    config["handlers"]["email"]["fromaddr"] = os.getenv("SENDER_EMAIL")
+    config["handlers"]["email"]["toaddrs"] = [os.getenv("TEST_EMAIL")]
+
     logging.config.dictConfig(config)
