@@ -34,8 +34,8 @@ A catalog of common issues, their likely causes, and fixes. Symptoms reference a
 ## Runtime issues
 
 ### Getting an email on every chat request
-**Cause:** `select_tool_node` calls `logger.critical("test error")`, and the `email` handler sends CRITICAL records via SMTP.
-**Fix:** Remove that line in `src/pipelines/nodes.py`. (Also see [13](13-logging-and-error-handling.md).)
+**Cause:** The `email` handler sends every `CRITICAL`-level log record via SMTP. A leftover `logger.critical("test error")` in `select_tool_node` would trigger this on every request.
+**Status:** That line is currently **commented out** in `src/pipelines/nodes.py`. If emails reappear, check whether it was accidentally re-enabled. (Also see [13](13-logging-and-error-handling.md).)
 
 ### `401 Invalid or expired token`
 **Causes:** Token expired (default 6h), wrong/rotated `JWT_SECRET_KEY`, or malformed `Authorization` header.

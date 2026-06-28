@@ -68,4 +68,14 @@ The server binds to `HOST:PORT` from `config.yml` (default `0.0.0.0:45001`). Int
 
 ---
 
-*Last reviewed against commit history up to `feat: expand LLM support with open router`.*
+*Last reviewed against commit history up to `feat(logging): add SMTP email handler for critical log alerts`.*
+
+---
+
+## Changelog
+
+2026-06-29 — Document SMTP email alert handler and resolve debug-log warning
+    Updated: 13-logging-and-error-handling.md — marked logger.critical("test error") warning resolved (line is now commented out); removed stale active-call warning
+    Updated: 12-pipeline.md — updated select_tool_node note to reflect the critical call is commented out
+    Updated: 18-troubleshooting.md — revised "Getting an email on every chat request" to reflect resolved status
+    Issues resolved: 1 | Issues added: 0

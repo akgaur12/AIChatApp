@@ -74,7 +74,7 @@ Logic:
 3. Else if it matches `SEARCH_PATTERN` → set `service_name = "web_search"`.
 4. Else leave as-is (typically `chat`).
 
-> Note: the node logs `logger.critical("test error")` on every call — a leftover debugging line that, combined with the `logging.yaml` email handler, will **email an alert on every request**. Remove it before production (see [13](13-logging-and-error-handling.md) / [18](18-troubleshooting.md)).
+> Note: a `logger.critical("test error")` debugging line is present in this node but **commented out**. Do not uncomment in production — it would trigger an email alert on every request via the SMTP handler.
 
 ### `chat_node` — plain LLM answer
 ```python

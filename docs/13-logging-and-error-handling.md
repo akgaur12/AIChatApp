@@ -49,7 +49,7 @@ class ExactLevelFilter(logging.Filter):
 - **Formatters:** `standard` (`%(asctime)s [%(levelname)s] %(name)s: %(message)s`) for files/console; `email_formatter` (multi-line with file/line/function) for alerts.
 - **Noisy third-party loggers** (`httpx`, `gunicorn`, `uvicorn`, `uvicorn.access`, `primp`, `mcp.client.sse`, `langchain_aws.chat_models.bedrock_converse`) are pinned to `WARNING`/`ERROR` via a YAML anchor (`&noisy`).
 
-> ⚠️ **CRITICAL ⇒ email.** Any `logger.critical(...)` sends an email via the SMTP handler. `select_tool_node` currently calls `logger.critical("test error")` on every request — remove it or the system emails on every chat call. See [12](12-pipeline.md) / [18](18-troubleshooting.md).
+> ℹ️ **CRITICAL ⇒ email.** Any `logger.critical(...)` sends an email via the SMTP handler. A leftover `logger.critical("test error")` in `select_tool_node` has been commented out — restore it only intentionally.
 
 > ℹ️ **Doc vs. code note:** `config.yml` also has a `Logging:` block (filenames like `aichatapp-info.log`, format string, `NOISY_LOGGERS`). The **active** configuration is `logging.yaml` (used by `dictConfig`); the `config.yml` `Logging` block is legacy from the previous code-based setup and is not what drives runtime logging now.
 
@@ -108,7 +108,7 @@ The streaming generator catches exceptions and emits an SSE `error` frame (`{"ty
 ## Gaps & recommendations
 - There is **no global exception handler** (`@app.exception_handler`) — unhandled exceptions return FastAPI's default 500 with no custom body. Consider adding one for consistent error envelopes and to log stack traces centrally.
 - `send_otp_email` uses `print(...)` instead of the logger — route it through `logger.error` for consistency.
-- Gate or remove the `logger.critical("test error")` in `select_tool_node`.
+- ~~Gate or remove the `logger.critical("test error")` in `select_tool_node`.~~ **Resolved** — the line is now commented out in `select_tool_node`.
 
 ---
 
